@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { fetchCardRequests } from "@/lib/api/cardRequest";
-import { CardRequest } from "@/types/manager/card/Cardruquest";
+import { CardRequest } from "@/types/manager/card/cardRequest";
 
 interface CardRequestStore {
   cardRequests: CardRequest[];

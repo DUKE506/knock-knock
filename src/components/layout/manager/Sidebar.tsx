@@ -7,6 +7,8 @@ import {
   ClipboardCheck,
   Users,
   CreditCard,
+  Coins,
+  Settings,
   LogOut,
 } from "lucide-react";
 
@@ -22,12 +24,17 @@ const menuItems = [
     items: [
       {
         icon: ClipboardCheck,
-        label: "카드 발급 요청",
+        label: "카드 발급 관리",
         href: "/manager/card-requests",
       },
-      { icon: Users, label: "관리자 목록", href: "/manager/admins" },
+      { icon: Users, label: "담당자 관리", href: "/manager/users" },
+      { icon: Coins, label: "크레딧 관리", href: "/manager/credits" },
       { icon: CreditCard, label: "카드 디자인", href: "/manager/card-design" },
     ],
+  },
+  {
+    section: "기타",
+    items: [{ icon: Settings, label: "설정", href: "/manager/settings" }],
   },
 ];
 

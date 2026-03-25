@@ -1,5 +1,7 @@
-import { CardRequest } from "@/types/manager/card/Cardruquest";
 import { supabase } from "../supabase";
+import { CardRequest } from "@/types/manager/card/cardRequest";
+import { createCard } from "./card";
+import { sendCardActivationEmail } from "./mail";
 
 // ============================================
 // 카드 요청 관련 API
@@ -95,7 +97,20 @@ export async function fetchCardRequests(workplaceId: string) {
  * 카드 요청 승인
  */
 export async function approveCardRequest(id: string, reviewedBy: string) {
-  const { data, error } = await supabase
+  // 1. 카드 요청 정보 조회
+  const { data: cardRequest, error: fetchError } = await supabase
+    .from("card_requests")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (fetchError || !cardRequest) {
+    console.error("카드 요청 조회 실패:", fetchError);
+    return { cardRequest: null, error: fetchError };
+  }
+
+  // 2. 카드 요청 상태 업데이트 (approved)
+  const { data: updatedRequest, error: updateError } = await supabase
     .from("card_requests")
     .update({
       status: "approved",
@@ -106,12 +121,46 @@ export async function approveCardRequest(id: string, reviewedBy: string) {
     .select()
     .single();
 
-  if (error) {
-    console.error("카드 요청 승인 실패:", error);
-    return { cardRequest: null, error };
+  if (updateError) {
+    console.error("카드 요청 승인 실패:", updateError);
+    return { cardRequest: null, error: updateError };
   }
 
-  return { cardRequest: data, error: null };
+  // 3. 카드 자동 생성
+  const { card, error: cardError } = await createCard({
+    cardRequestId: id,
+    userName: cardRequest.user_name,
+    userEmail: cardRequest.user_email,
+    userPhone: cardRequest.user_phone,
+    workplaceId: cardRequest.workplace_id,
+    createdBy: reviewedBy,
+  });
+
+  if (cardError || !card) {
+    console.error("카드 생성 실패:", cardError);
+    // 카드 생성 실패 시 요청 상태 롤백
+    await supabase
+      .from("card_requests")
+      .update({ status: "pending" })
+      .eq("id", id);
+    return { cardRequest: null, error: "카드 생성에 실패했습니다." };
+  }
+
+  // 4. 활성화번호 이메일 발송
+  try {
+    await sendCardActivationEmail({
+      to: cardRequest.user_email,
+      userName: cardRequest.user_name,
+      cardNumber: card.card_number,
+      activationCode: card.activation_code,
+    });
+    console.log("활성화번호 이메일 발송 완료:", cardRequest.user_email);
+  } catch (emailError) {
+    console.error("이메일 발송 실패:", emailError);
+    // 이메일 실패는 치명적이지 않으므로 계속 진행
+  }
+
+  return { cardRequest: updatedRequest, error: null };
 }
 
 /**

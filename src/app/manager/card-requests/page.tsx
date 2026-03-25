@@ -5,10 +5,11 @@ import { CheckCircle, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import BaseTable from "@/components/common/table/BaseTable";
 import Button from "@/components/common/Button";
+import CardDetailModal from "@/components/manager/cards/CardDetailModal";
 import {
   CardRequest,
   CardRequestStatus,
-} from "@/types/manager/card/Cardruquest";
+} from "@/types/manager/card/cardRequest";
 import { ColumnDef } from "@tanstack/react-table";
 import { approveCardRequest, rejectCardRequest } from "@/lib/api/cardRequest";
 import { useCardRequestStore } from "@/store/useCardRequestStore";
@@ -19,6 +20,10 @@ export default function CardRequestsPage() {
   >("all");
   const [userName, setUserName] = useState("");
   const [workplaceId, setWorkplaceId] = useState("");
+  const [selectedRequest, setSelectedRequest] = useState<CardRequest | null>(
+    null,
+  );
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const { cardRequests, isLoading, syncWithSupabase, updateCardRequest } =
     useCardRequestStore();
@@ -42,6 +47,12 @@ export default function CardRequestsPage() {
     if (!workplaceId) return;
     syncWithSupabase(workplaceId);
   }, [workplaceId, syncWithSupabase]);
+
+  // 상세 모달 열기
+  const openDetailModal = (cardRequest: CardRequest) => {
+    setSelectedRequest(cardRequest);
+    setIsDetailModalOpen(true);
+  };
 
   // 승인 처리
   const handleApprove = async (id: string) => {
@@ -187,6 +198,7 @@ export default function CardRequestsPage() {
       header: "관리",
       cell: ({ row }) => {
         const isPending = row.original.status === "pending";
+        const isApproved = row.original.status === "approved";
 
         return (
           <div className="flex gap-1.5">
@@ -210,6 +222,13 @@ export default function CardRequestsPage() {
                   }}
                 />
               </>
+            ) : isApproved ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                title="상세"
+                onClick={() => openDetailModal(row.original)}
+              />
             ) : (
               <span className="text-xs text-text-3">
                 {row.original.reviewedBy &&
@@ -227,7 +246,7 @@ export default function CardRequestsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between mb-7">
         <div>
-          <h1 className="text-2xl font-semibold text-text">카드 발급 요청</h1>
+          <h1 className="text-2xl font-semibold text-text">카드 발급 관리</h1>
           <p className="text-sm text-text-3 mt-1">
             전체 {stats.total}개 • 대기중 {stats.pending}개 • 승인{" "}
             {stats.approved}개 • 거부 {stats.rejected}개
@@ -277,6 +296,13 @@ export default function CardRequestsPage() {
           emptyMessage="카드 발급 요청이 없습니다."
         />
       )}
+
+      {/* 상세 모달 */}
+      <CardDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        cardRequest={selectedRequest}
+      />
     </>
   );
 }
