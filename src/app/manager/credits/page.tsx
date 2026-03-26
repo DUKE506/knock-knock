@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Coins, Plus, Zap, ArrowRight } from "lucide-react";
 import Button from "@/components/common/Button";
 import { toast } from "sonner";
+import { createCreditRequest, redeemCreditCode } from "@/lib/api/credit";
 
 export default function CreditsPage() {
   const [currentCredits] = useState(150); // TODO: 실제 크레딧 정보
@@ -17,6 +18,29 @@ export default function CreditsPage() {
   const [rechargeCode, setRechargeCode] = useState("");
   const [isRechargeLoading, setIsRechargeLoading] = useState(false);
 
+  // TODO: 실제 사업장 정보 가져오기
+  const getUserWorkplaceInfo = () => {
+    const userStr = localStorage.getItem("user");
+    if (!userStr) return null;
+
+    try {
+      const user = JSON.parse(userStr);
+
+      return {
+        workplaceId: user.workplace_id || "",
+        workplaceName: user.workplaceName || "",
+        managerName: user.name || "",
+      };
+    } catch {
+      return null;
+    }
+  };
+
+  const workplaceInfo = getUserWorkplaceInfo();
+  const workplaceId = workplaceInfo?.workplaceId || "";
+  const workplaceName = workplaceInfo?.workplaceName || "";
+  const managerName = workplaceInfo?.managerName || "";
+
   // 크레딧 충전 요청
   const handleCreditRequest = async () => {
     if (!requestAmount || parseInt(requestAmount) <= 0) {
@@ -24,14 +48,33 @@ export default function CreditsPage() {
       return;
     }
 
+    if (!workplaceId) {
+      toast.error("사업장 정보를 찾을 수 없습니다.");
+      return;
+    }
+
     setIsRequestLoading(true);
 
-    // TODO: API 호출 - 크레딧 충전 요청
-    setTimeout(() => {
+    try {
+      const { creditHistory, error } = await createCreditRequest({
+        amount: parseInt(requestAmount),
+        workplaceId,
+        workplaceName,
+        createdBy: managerName,
+      });
+
+      if (error) {
+        toast.error("크레딧 요청에 실패했습니다.");
+        return;
+      }
+
       toast.success(`${requestAmount}개 크레딧 충전 요청이 완료되었습니다.`);
       setRequestAmount("");
+    } catch (err) {
+      toast.error("요청 중 오류가 발생했습니다.");
+    } finally {
       setIsRequestLoading(false);
-    }, 1000);
+    }
   };
 
   // 충전 코드 입력
@@ -43,12 +86,26 @@ export default function CreditsPage() {
 
     setIsRechargeLoading(true);
 
-    // TODO: API 호출 - 충전 코드 검증 및 충전
-    setTimeout(() => {
-      toast.success("크레딧이 충전되었습니다!");
+    try {
+      const { success, amount, error } = await redeemCreditCode(
+        rechargeCode,
+        workplaceId,
+      );
+
+      if (!success || error) {
+        toast.error(error || "코드 사용에 실패했습니다.");
+        return;
+      }
+
+      toast.success(`${amount}개 크레딧이 충전되었습니다!`);
       setRechargeCode("");
+
+      // TODO: 크레딧 잔액 새로고침
+    } catch (err) {
+      toast.error("코드 처리 중 오류가 발생했습니다.");
+    } finally {
       setIsRechargeLoading(false);
-    }, 1000);
+    }
   };
 
   const creditPercentage = (currentCredits / totalCredits) * 100;

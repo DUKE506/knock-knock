@@ -36,6 +36,7 @@ export default function LoginPage() {
         toast.error("이메일 또는 비밀번호가 일치하지 않습니다.");
         return;
       }
+      console.log(user);
 
       // 로그인 성공
       // TODO: 세션/토큰 저장 (localStorage, cookie 등)
@@ -43,11 +44,23 @@ export default function LoginPage() {
 
       toast.success("로그인 성공!");
 
+      // localStorage.setItem(
+      //   "user",
+      //   JSON.stringify({
+      //     id: user.id,
+      //     name: user.name,
+      //     email: user.email,
+      //     role: user.role, // 'manager' | 'admin'
+      //     workplaceId: user.workplaceId, // 사업장 UUID
+      //     workplaceName: user.workplaceName,
+      //   }),
+      // );
+
       // Role에 따라 리다이렉트
       if (user.role === "admin") {
         router.push("/admin/dashboard");
       } else {
-        router.push("/manager/dashboard"); // TODO: 일반 사용자 대시보드 구현
+        router.push("/manager/card-requests"); // TODO: 일반 사용자 대시보드 구현
       }
     } catch (error) {
       toast.error("로그인에 실패했습니다.");

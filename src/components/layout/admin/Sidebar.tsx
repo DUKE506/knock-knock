@@ -5,53 +5,42 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Building2,
-  Key,
-  ClipboardList,
   Coins,
   Users,
-  ScrollText,
   Settings,
+  LogOut,
 } from "lucide-react";
 
 const navItems = [
   {
-    section: "Overview",
+    section: "overview",
     items: [
       { icon: LayoutDashboard, label: "대시보드", href: "/admin/dashboard" },
     ],
   },
   {
-    section: "Management",
+    section: "management",
     items: [
-      { icon: Key, label: "사업장 관리", href: "/admin/workplaces" },
-      // { icon: Key, label: "발급코드 관리", href: "/admin/issue-codes" },
-      {
-        icon: ClipboardList,
-        label: "발급 요청 현황",
-        href: "/admin/requests",
-        badge: 7,
-      },
+      { icon: Building2, label: "사업장 관리", href: "/admin/workplaces" },
       { icon: Coins, label: "크레딧 관리", href: "/admin/credits" },
+      { icon: Users, label: "관리자", href: "/admin/users" },
     ],
   },
-  {
-    section: "System",
-    items: [
-      { icon: Users, label: "관리자 계정", href: "/admin/managers" },
-      { icon: ScrollText, label: "시스템 로그", href: "/admin/logs" },
-      { icon: Settings, label: "설정", href: "/admin/settings" },
-    ],
-  },
-];
+] as const;
 
-export default function Sidebar() {
+export default function AdminSidebar() {
   const pathname = usePathname();
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
 
   return (
     <aside className="w-[220px] min-h-screen bg-surface border-r border-border fixed top-0 left-0 bottom-0 flex flex-col">
       {/* Logo */}
       <div className="px-5 pt-6 pb-5 border-b border-border">
-        <div className="flex items-center gap-2">
+        <Link href="/admin/dashboard" className="flex items-center gap-2">
           <div className="w-7 h-7 bg-accent rounded-md flex items-center justify-center text-[13px] font-semibold text-white tracking-tight">
             KK
           </div>
@@ -63,7 +52,7 @@ export default function Sidebar() {
               Super Admin
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Navigation */}
@@ -76,6 +65,7 @@ export default function Sidebar() {
             {section.items.map((item, itemIdx) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
+              const itemWithBadge = item as typeof item & { badge?: string };
               return (
                 <Link
                   key={itemIdx}
@@ -92,9 +82,9 @@ export default function Sidebar() {
                 >
                   <Icon className="w-4 h-4" />
                   <span className="flex-1">{item.label}</span>
-                  {item.badge && (
+                  {itemWithBadge.badge && (
                     <span className="ml-auto bg-red text-white text-[10px] px-1.5 py-0.5 rounded-full font-mono">
-                      {item.badge}
+                      {itemWithBadge.badge}
                     </span>
                   )}
                 </Link>
@@ -104,17 +94,15 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
-      <div className="px-5 py-4 border-t border-border text-xs text-text-3">
-        <div className="flex items-center gap-2">
-          <div className="w-[26px] h-[26px] rounded-md bg-accent-dim border border-accent flex items-center justify-center text-[11px] text-accent font-semibold">
-            SA
-          </div>
-          <div>
-            <div className="text-xs text-text-2 font-medium">슈퍼 관리자</div>
-            <div className="text-[10px] text-text-3 font-mono">superadmin</div>
-          </div>
-        </div>
+      {/* Logout */}
+      <div className="px-5 py-4 border-t border-border">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2.5 px-0 py-0 text-[13px] text-text-2 hover:text-text transition-colors w-full"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>로그아웃</span>
+        </button>
       </div>
     </aside>
   );

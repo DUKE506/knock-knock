@@ -125,7 +125,7 @@ export default function BaseTable<TData>({
               table.getRowModel().rows.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-b border-border last:border-b-0 hover:bg-surface-2 transition-colors"
+                  className="border-b border-border last:border-b-0 hover:bg-accent-dim transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <td

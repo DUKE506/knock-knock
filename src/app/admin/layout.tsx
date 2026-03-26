@@ -11,7 +11,7 @@ const PAGE_CONFIG: Record<string, { title: string; subtitle?: string }> = {
   "/admin/issue-codes": { title: "발급코드 관리" },
   "/admin/requests": { title: "발급 요청 현황" },
   "/admin/credits": { title: "크레딧 관리" },
-  "/admin/managers": { title: "관리자 계정" },
+  "/admin/users": { title: "관리자 계정" },
   "/admin/logs": { title: "시스템 로그" },
   "/admin/settings": { title: "설정" },
 };
