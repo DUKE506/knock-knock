@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 // URL → Title 매핑
 const PAGE_CONFIG: Record<string, { title: string; subtitle?: string }> = {
   "/admin/dashboard": { title: "대시보드" },
-  "/admin/workplaces": { title: "사업장 관리" },
+  "/admin/clients": { title: "고객사 관리" },
   "/admin/issue-codes": { title: "발급코드 관리" },
   "/admin/requests": { title: "발급 요청 현황" },
   "/admin/credits": { title: "크레딧 관리" },

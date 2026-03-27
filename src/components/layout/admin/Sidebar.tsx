@@ -12,16 +12,16 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  {
-    section: "overview",
-    items: [
-      { icon: LayoutDashboard, label: "대시보드", href: "/admin/dashboard" },
-    ],
-  },
+  // {
+  //   section: "overview",
+  //   items: [
+  //     { icon: LayoutDashboard, label: "대시보드", href: "/admin/dashboard" },
+  //   ],
+  // },
   {
     section: "management",
     items: [
-      { icon: Building2, label: "사업장 관리", href: "/admin/workplaces" },
+      { icon: Building2, label: "고객사 관리", href: "/admin/clients" },
       { icon: Coins, label: "크레딧 관리", href: "/admin/credits" },
       { icon: Users, label: "관리자", href: "/admin/users" },
     ],

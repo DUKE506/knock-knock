@@ -8,6 +8,7 @@ import { workplaceColumns } from "./columns";
 import { useWorkplaceStore } from "@/store/useWorkplaceStore";
 import { Workplace } from "@/types/workplace";
 import Button from "@/components/common/Button";
+import { useQueryParams } from "@/hooks/useQueryParams";
 
 // 임시 더미 데이터
 const mockWorkplaces: Workplace[] = [
@@ -147,11 +148,12 @@ const mockWorkplaces: Workplace[] = [
 
 export default function WorkplacesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const { workplaces, syncWithSupabase, setWorkplaces } = useWorkplaceStore();
+  const { workplaces, fetchWorkplaces, setWorkplaces } = useWorkplaceStore();
+  const { page, search, setPage, setSearch } = useQueryParams();
 
   // 초기 데이터 로드 (임시)
   useEffect(() => {
-    syncWithSupabase();
+    // fetchWorkplaces();
     // if (workplaces.length === 0) {
     //   // setWorkplaces(mockWorkplaces);
     // }
@@ -162,14 +164,12 @@ export default function WorkplacesPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between mb-7">
         <div>
-          <h1 className="text-2xl font-semibold text-text">사업장 관리</h1>
+          <h1 className="text-2xl font-semibold text-text">고객사 관리</h1>
           <p className="text-sm text-text-3 mt-1">
-            전체 {workplaces.length}개 사업장
+            전체 {workplaces.length}개 고객사
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="secondary" icon={Filter} title="필터" />
-
           <Button
             variant="primary"
             icon={Plus}
@@ -180,7 +180,7 @@ export default function WorkplacesPage() {
       </div>
 
       {/* Table */}
-      <BaseTable
+      {/* <BaseTable
         data={workplaces}
         columns={workplaceColumns}
         enableSorting={true}
@@ -189,7 +189,7 @@ export default function WorkplacesPage() {
         pageSize={10}
         searchPlaceholder="사업장명, 코드 검색..."
         emptyMessage="등록된 사업장이 없습니다."
-      />
+      /> */}
 
       {/* Create Modal */}
       <CreateWorkplaceModal

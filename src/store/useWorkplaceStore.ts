@@ -2,9 +2,12 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { Workplace } from "@/types/workplace";
 import { fetchWorkplaces } from "@/lib/api/workplace";
+import { PagedRequest } from "@/types/pagination";
+import { PaginationMeta } from "@/types/response";
 
 interface WorkplaceStore {
   workplaces: Workplace[];
+  meta: PaginationMeta;
   isLoading: boolean;
   error: string | null;
 
@@ -17,13 +20,19 @@ interface WorkplaceStore {
   setError: (error: string | null) => void;
 
   // Supabase 동기화
-  syncWithSupabase: () => Promise<void>;
+  fetchWorkplaces: (params: PagedRequest) => Promise<void>;
 }
 
 export const useWorkplaceStore = create<WorkplaceStore>()(
   persist(
     (set) => ({
       workplaces: [],
+      meta: {
+        pageNumber: 1,
+        pageSize: 20,
+        totalCount: 0,
+        totalPages: 0,
+      },
       isLoading: false,
       error: null,
 
@@ -50,16 +59,26 @@ export const useWorkplaceStore = create<WorkplaceStore>()(
 
       setError: (error) => set({ error }),
 
-      // Supabase에서 데이터 가져오기
-      syncWithSupabase: async () => {
+      // 백엔드에서 데이터 가져오기 (페이지네이션 지원)
+      fetchWorkplaces: async (params) => {
         set({ isLoading: true, error: null });
+
         try {
-          const { workplaces, error } = await fetchWorkplaces();
-          if (error) {
-            set({ error: error.message, isLoading: false });
-          } else {
-            set({ workplaces, isLoading: false });
+          const result = await fetchWorkplaces(params);
+
+          if (result.error || !result.data) {
+            set({
+              error: result.error?.message || "데이터 로딩 실패",
+              isLoading: false,
+            });
+            return;
           }
+
+          set({
+            workplaces: result.data.data,
+            meta: result.data.meta,
+            isLoading: false,
+          });
         } catch (err) {
           set({ error: "데이터 동기화 실패", isLoading: false });
         }

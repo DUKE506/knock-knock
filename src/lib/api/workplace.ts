@@ -1,5 +1,7 @@
+import { ApiListResponse } from "@/types/response";
 import { supabase } from "../supabase";
 import { Workplace } from "@/types/workplace";
+import { PagedRequest } from "@/types/pagination";
 
 // ============================================
 // 사업장 관련 API
@@ -8,11 +10,29 @@ import { Workplace } from "@/types/workplace";
 /**
  * 사업장 전체 조회
  */
-export async function fetchWorkplaces() {
-  const { data, error } = await supabase
+export async function fetchWorkplaces(params: PagedRequest) {
+  const from = (params.pageNumber - 1) * params.pageSize;
+  const to = from + params.pageSize - 1;
+
+  let query = supabase
     .from("workplaces")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("created_at", { ascending: false });
+
+  //검색어 필터
+  if (params.search) {
+    query = query.or(`name.like.%${params.search}`);
+  }
+  //정렬(옵션)
+  if (params.sortBy) {
+    query = query.order(params.sortBy, {
+      ascending: params.sortOrder === "asc",
+    });
+  }
+  // 페이지네이션 적용
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error("사업장 조회 실패:", error);
@@ -37,7 +57,18 @@ export async function fetchWorkplaces() {
     managerEmail: row.manager_email,
   }));
 
-  return { workplaces, error: null };
+  return {
+    data: {
+      meta: {
+        pageNumber: params.pageNumber,
+        pageSize: params.pageSize,
+        totalCount: count || 0,
+        totalPages: Math.ceil((count || 0) / params.pageSize),
+      },
+      data: data || [],
+    },
+    error: null,
+  };
 }
 
 /**

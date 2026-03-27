@@ -13,7 +13,7 @@ export const workplaceColumns: ColumnDef<Workplace>[] = [
   },
   {
     accessorKey: "issueCode",
-    header: "발급코드",
+    header: "라이센스",
     cell: ({ row }) => (
       <span className="font-mono font-semibold text-xs  border border-border-2 px-2 py-0.5 rounded text-accent">
         {row.original.issueCode}
