@@ -87,7 +87,7 @@ export default function SettingsPage() {
             <div>
               <label className="block text-sm font-medium text-text mb-2 flex items-center gap-2">
                 <Code className="w-3.5 h-3.5" />
-                발급 코드
+                라이센스 코드
               </label>
               <div className="relative">
                 <input
@@ -103,7 +103,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <p className="text-xs text-text-3 mt-1.5">
-                ※ 발급 코드는 변경할 수 없습니다
+                ※ 라이센스 코드는 변경할 수 없습니다
               </p>
             </div>
 
@@ -160,7 +160,7 @@ export default function SettingsPage() {
             <br />
             <strong>수정 불가능한 항목</strong>
             <br />
-            • 발급 코드: 보안상 변경할 수 없습니다
+            • 라이센스 코드: 보안상 변경할 수 없습니다
             <br />
             • 관리자 이메일: 사업장 생성 시 등록된 이메일입니다
             <br />• 생성일: 사업장이 최초 생성된 날짜입니다

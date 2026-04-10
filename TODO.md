@@ -6,13 +6,13 @@
 
 ## Phase 1: 간단한 수정
 
-### Task 1: 설정 페이지 "발급 코드" → "라이센스 코드" 라벨 변경
+### Task 1-A: 설정 페이지 "발급 코드" → "라이센스 코드" 라벨 변경
 
-- [ ] `src/app/manager/settings/page.tsx` — 라벨 텍스트 변경 (L90)
-- [ ] `src/app/manager/settings/page.tsx` — 안내 문구 변경 (L106)
-- [ ] `src/app/manager/settings/page.tsx` — 수정 불가 안내 변경 (L163)
+- [x] `src/app/manager/settings/page.tsx` — 라벨 텍스트 변경 (L90)
+- [x] `src/app/manager/settings/page.tsx` — 안내 문구 변경 (L106)
+- [x] `src/app/manager/settings/page.tsx` — 수정 불가 안내 변경 (L163)
 
-### Task 2: 카드 거부 시 DB 삭제 처리
+### Task 1-B: 카드 거부 시 DB 삭제 처리
 
 - [ ] `src/lib/api/cardRequest.ts` — `rejectCardRequest()` `.update()` → `.delete()` 로 변경, 파라미터 단순화
 - [ ] `src/types/manager/card/cardRequest.ts` — `CardRequestStatus`에서 `"rejected"` 제거
@@ -29,14 +29,14 @@
 
 ## Phase 2: 크레딧 시스템 변경
 
-### Task 3: 크레딧 API 수정
+### Task 2-A: 크레딧 API 수정
 
 - [ ] `src/lib/api/credit.ts` — `CreditHistory.type`에 `"charged"` 추가
 - [ ] `src/lib/api/credit.ts` — `chargeCreditsToWorkplace()` 함수 추가
   - [ ] workplaces 테이블 `credit_remaining` / `credit_total` 업데이트
   - [ ] credit_history에 `type: "charged"` 이력 삽입
 
-### Task 4: 슈퍼관리자 크레딧 페이지 리팩토링
+### Task 2-B: 슈퍼관리자 크레딧 페이지 리팩토링
 
 - [ ] `src/components/admin/credits/CreateCreditModal.tsx` → `ChargeCreditModal.tsx` 신규 작성
   - [ ] 사업장 드롭다운 (useWorkplaceStore 재사용)
@@ -51,7 +51,7 @@
 - [ ] `src/app/admin/credits/history-colums.tsx` — `status` 로직 단순화
 - [ ] `src/app/admin/credits/request-colums.tsx` — 파일 삭제
 
-### Task 5: 고객사 크레딧 페이지 리팩토링
+### Task 2-C: 고객사 크레딧 페이지 리팩토링
 
 - [ ] `src/app/manager/credits/page.tsx` — 충전 요청 폼 제거
 - [ ] `src/app/manager/credits/page.tsx` — 충전 코드 입력 폼 제거
@@ -64,7 +64,7 @@
 
 ## Phase 3: 카드 활성화 상태
 
-### Task 6: 승인된 카드의 모바일 활성화 여부 구분
+### Task 3-A: 승인된 카드의 모바일 활성화 여부 구분
 
 - [ ] `src/lib/api/cardRequest.ts` — `fetchCardRequests` 쿼리에 `cards` 테이블 조인
 - [ ] `src/lib/api/cardRequest.ts` — `isActivated` 필드 매핑 추가
@@ -79,7 +79,7 @@
 
 ## Phase 4: 관리자 역할 위임
 
-### Task 7: 주관리자/부관리자 기능
+### Task 4-A: 주관리자/부관리자 기능
 
 - [ ] `src/lib/api/user.ts` — `delegatePrimaryRole(currentId, targetId, workplaceId)` 함수 추가
   - [ ] 현재 주관리자 → `sub_admin` 변경
@@ -95,7 +95,7 @@
 
 ## Phase 5: API 정리
 
-### Task 8: 백엔드 교체 대비 API 정리
+### Task 5-A: 백엔드 교체 대비 API 정리
 
 - [ ] `src/lib/api/credit.ts` — 미사용 함수 정리 (`createCreditRequest`, `redeemCreditCode`, `approveCreditRequest`, `rejectCreditRequest`)
 - [ ] `src/lib/api/cardRequest.ts` — 반환 타입 `{ data, error }` 패턴 통일 확인
