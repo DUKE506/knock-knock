@@ -1,52 +1,45 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import BaseTable from "@/components/common/table/BaseTable";
-import Button from "@/components/common/Button";
 import CardDetailModal from "@/components/manager/cards/CardDetailModal";
 import {
   CardRequest,
   CardRequestStatus,
 } from "@/types/manager/card/cardRequest";
-import { ColumnDef } from "@tanstack/react-table";
 import { approveCardRequest, rejectCardRequest } from "@/lib/api/cardRequest";
 import { useCardRequestStore } from "@/store/useCardRequestStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useQueryParams } from "@/hooks/useQueryParams";
+import { createCardRequestColumns } from "./columns";
 
 export default function CardRequestsPage() {
   const [selectedStatus, setSelectedStatus] = useState<
     CardRequestStatus | "all"
   >("all");
-  const [userName, setUserName] = useState("");
-  const [workplaceId, setWorkplaceId] = useState("");
+  const { user } = useAuthStore();
+  const userName = user?.name || user?.email || "";
+  const workplaceId = user?.workplaceId || "";
   const [selectedRequest, setSelectedRequest] = useState<CardRequest | null>(
     null,
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  const { cardRequests, isLoading, syncWithSupabase, updateCardRequest } =
-    useCardRequestStore();
+  const {
+    cardRequests,
+    meta,
+    getCardRequests,
+    updateCardRequest,
+    deleteCardRequest,
+  } = useCardRequestStore();
+  const { page, search, params, setPage, setSearch } = useQueryParams();
 
-  // 사용자 정보 가져오기
-  useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        setUserName(user.name || user.email);
-        setWorkplaceId(user.workplace_id);
-      } catch (error) {
-        console.error("사용자 정보 파싱 실패:", error);
-      }
-    }
-  }, []);
-
-  // 카드 요청 목록 불러오기 (Zustand)
+  // 카드 요청 목록 불러오기
   useEffect(() => {
     if (!workplaceId) return;
-    syncWithSupabase(workplaceId);
-  }, [workplaceId, syncWithSupabase]);
+    getCardRequests(workplaceId, params);
+  }, [workplaceId, page, search]);
 
   // 상세 모달 열기
   const openDetailModal = (cardRequest: CardRequest) => {
@@ -60,15 +53,11 @@ export default function CardRequestsPage() {
       toast.error("사용자 정보를 찾을 수 없습니다.");
       return;
     }
-
-    const { cardRequest, error } = await approveCardRequest(id, userName);
-
+    const { error } = await approveCardRequest(id, userName);
     if (error) {
       toast.error("승인 처리에 실패했습니다.");
     } else {
       toast.success("카드 발급이 승인되었습니다.");
-
-      // Zustand 스토어 업데이트
       updateCardRequest(id, {
         status: "approved",
         reviewedBy: userName,
@@ -77,36 +66,18 @@ export default function CardRequestsPage() {
     }
   };
 
-  // 거부 처리
-  const handleReject = async (id: string, reason: string) => {
+  // 거부 처리 (DB 삭제)
+  const handleReject = async (id: string) => {
     if (!userName) {
       toast.error("사용자 정보를 찾을 수 없습니다.");
       return;
     }
-
-    if (!reason.trim()) {
-      toast.error("거부 사유를 입력해주세요.");
-      return;
-    }
-
-    const { cardRequest, error } = await rejectCardRequest(
-      id,
-      userName,
-      reason,
-    );
-
+    const { error } = await rejectCardRequest(id);
     if (error) {
       toast.error("거부 처리에 실패했습니다.");
     } else {
-      toast.success("카드 발급이 거부되었습니다.");
-
-      // Zustand 스토어 업데이트
-      updateCardRequest(id, {
-        status: "rejected",
-        reviewedBy: userName,
-        reviewedAt: new Date().toLocaleString("ko-KR"),
-        rejectReason: reason,
-      });
+      toast.success("카드 발급 요청이 거부되었습니다.");
+      deleteCardRequest(id);
     }
   };
 
@@ -116,130 +87,17 @@ export default function CardRequestsPage() {
       ? cardRequests
       : cardRequests.filter((req) => req.status === selectedStatus);
 
-  // 통계 계산
+  // 통계
   const stats = {
-    total: cardRequests.length,
     pending: cardRequests.filter((req) => req.status === "pending").length,
     approved: cardRequests.filter((req) => req.status === "approved").length,
-    rejected: cardRequests.filter((req) => req.status === "rejected").length,
   };
 
-  // 테이블 컬럼 정의
-  const columns: ColumnDef<CardRequest>[] = [
-    {
-      accessorKey: "userName",
-      header: "이름",
-      cell: ({ row }) => (
-        <div className="font-medium text-text">{row.original.userName}</div>
-      ),
-    },
-    {
-      accessorKey: "userEmail",
-      header: "이메일",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-2">{row.original.userEmail}</div>
-      ),
-    },
-    {
-      accessorKey: "userPhone",
-      header: "전화번호",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-2 font-mono">
-          {row.original.userPhone}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "requestedAt",
-      header: "요청일시",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-3 font-mono">
-          {row.original.requestedAt}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "상태",
-      cell: ({ row }) => {
-        const statusConfig = {
-          pending: {
-            label: "대기중",
-            color: "bg-amber-dim text-amber",
-            icon: Clock,
-          },
-          approved: {
-            label: "승인",
-            color: "bg-green-dim text-green",
-            icon: CheckCircle,
-          },
-          rejected: {
-            label: "거부",
-            color: "bg-red-dim text-red",
-            icon: XCircle,
-          },
-        };
-
-        const config = statusConfig[row.original.status];
-        const Icon = config.icon;
-
-        return (
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${config.color}`}
-          >
-            <Icon className="w-3.5 h-3.5" />
-            {config.label}
-          </span>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: "관리",
-      cell: ({ row }) => {
-        const isPending = row.original.status === "pending";
-        const isApproved = row.original.status === "approved";
-
-        return (
-          <div className="flex gap-1.5">
-            {isPending ? (
-              <>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  title="승인"
-                  onClick={() => handleApprove(row.original.id)}
-                />
-                <Button
-                  variant="danger"
-                  size="sm"
-                  title="거부"
-                  onClick={() => {
-                    const reason = prompt("거부 사유를 입력하세요:");
-                    if (reason) {
-                      handleReject(row.original.id, reason);
-                    }
-                  }}
-                />
-              </>
-            ) : isApproved ? (
-              <Button
-                variant="secondary"
-                size="sm"
-                title="상세"
-                onClick={() => openDetailModal(row.original)}
-              />
-            ) : (
-              <span className="text-xs text-text-3">
-                {row.original.reviewedBy &&
-                  `처리자: ${row.original.reviewedBy}`}
-              </span>
-            )}
-          </div>
-        );
-      },
-    },
-  ];
+  const columns = createCardRequestColumns({
+    onApprove: handleApprove,
+    onReject: handleReject,
+    onDetail: openDetailModal,
+  });
 
   return (
     <>
@@ -248,8 +106,8 @@ export default function CardRequestsPage() {
         <div>
           <h1 className="text-2xl font-semibold text-text">카드 발급 관리</h1>
           <p className="text-sm text-text-3 mt-1">
-            전체 {stats.total}개 • 대기중 {stats.pending}개 • 승인{" "}
-            {stats.approved}개 • 거부 {stats.rejected}개
+            전체 {meta.totalCount}개 • 대기중 {stats.pending}개 • 승인{" "}
+            {stats.approved}개
           </p>
         </div>
       </div>
@@ -257,10 +115,9 @@ export default function CardRequestsPage() {
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 bg-surface border border-border rounded-lg p-1 mb-4">
         {[
-          { value: "all", label: "전체", count: stats.total },
+          { value: "all", label: "전체", count: meta.totalCount },
           { value: "pending", label: "대기중", count: stats.pending },
           { value: "approved", label: "승인", count: stats.approved },
-          { value: "rejected", label: "거부", count: stats.rejected },
         ].map((tab) => (
           <button
             key={tab.value}
@@ -280,22 +137,24 @@ export default function CardRequestsPage() {
       </div>
 
       {/* Table */}
-      {isLoading ? (
-        <div className="bg-surface border border-border rounded-lg p-12 text-center">
-          <p className="text-text-3">로딩 중...</p>
-        </div>
-      ) : (
-        <BaseTable
-          data={filteredRequests}
-          columns={columns}
-          enableSorting={true}
-          enableFiltering={true}
-          enablePagination={true}
-          pageSize={10}
-          searchPlaceholder="이름, 이메일, 전화번호 검색..."
-          emptyMessage="카드 발급 요청이 없습니다."
-        />
-      )}
+      <BaseTable
+        data={filteredRequests}
+        columns={columns}
+        enableSorting={true}
+        enableFiltering={true}
+        enablePagination={true}
+        pageSize={params.pageSize}
+        emptyMessage="카드 발급 요청이 없습니다."
+        serverSide={{
+          totalCount: meta.totalCount,
+          totalPages: meta.totalPages,
+          currentPage: meta.pageNumber,
+          pageSize: meta.pageSize,
+          currentSearch: search,
+          onPageChange: setPage,
+          onSearch: setSearch,
+        }}
+      />
 
       {/* 상세 모달 */}
       <CardDetailModal

@@ -64,7 +64,7 @@ export const useCardRequestStore = create<CardRequestStore>()(
         set({ isLoading: true, error: null });
         try {
           const result = await fetchCardRequests(workplaceId, params);
-          if (result.error) {
+          if (result.error || !result.data) {
             set({
               error: "카드 요청 목록을 불러오는데 실패했습니다.",
               isLoading: false,

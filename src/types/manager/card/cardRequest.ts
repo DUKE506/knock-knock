@@ -1,4 +1,4 @@
-export type CardRequestStatus = "pending" | "approved" | "rejected";
+export type CardRequestStatus = "pending" | "approved";
 
 export interface CardRequest {
   id: string;
@@ -9,5 +9,4 @@ export interface CardRequest {
   status: CardRequestStatus;
   reviewedAt?: string;
   reviewedBy?: string;
-  rejectReason?: string;
 }

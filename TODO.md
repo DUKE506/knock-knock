@@ -14,16 +14,19 @@
 
 ### Task 1-B: 카드 거부 시 DB 삭제 처리
 
-- [ ] `src/lib/api/cardRequest.ts` — `rejectCardRequest()` `.update()` → `.delete()` 로 변경, 파라미터 단순화
-- [ ] `src/types/manager/card/cardRequest.ts` — `CardRequestStatus`에서 `"rejected"` 제거
-- [ ] `src/types/manager/card/cardRequest.ts` — `CardRequest`에서 `rejectReason` 필드 제거
-- [ ] `src/store/useCardRequestStore.ts` — `deleteCardRequest(id)` 액션 추가 확인
-- [ ] `src/app/manager/card-requests/page.tsx` — `handleReject` 시그니처 수정 (reason 제거)
-- [ ] `src/app/manager/card-requests/page.tsx` — 거부 후 `updateCardRequest` → `deleteCardRequest` 로 변경
-- [ ] `src/app/manager/card-requests/page.tsx` — 통계/탭에서 `rejected` 항목 제거
-- [ ] `src/app/manager/card-requests/columns.tsx` — `onReject` 핸들러 시그니처 수정
-- [ ] `src/app/manager/card-requests/columns.tsx` — `prompt()` → `confirm()` 으로 변경
-- [ ] `src/app/manager/card-requests/columns.tsx` — `rejected` 상태 뱃지 및 분기 제거
+- [x] `src/lib/api/cardRequest.ts` — `rejectCardRequest()` `.update()` → `.delete()` 로 변경, 파라미터 단순화
+- [x] `src/lib/api/cardRequest.ts` — `fetchCardRequests()` 서버사이드 페이지네이션 지원 (버그 수정)
+- [x] `src/types/manager/card/cardRequest.ts` — `CardRequestStatus`에서 `"rejected"` 제거
+- [x] `src/types/manager/card/cardRequest.ts` — `CardRequest`에서 `rejectReason` 필드 제거
+- [x] `src/store/useCardRequestStore.ts` — `deleteCardRequest(id)` 액션 추가 확인
+- [x] `src/app/manager/card-requests/page.tsx` — `handleReject` 시그니처 수정 (reason 제거)
+- [x] `src/app/manager/card-requests/page.tsx` — 거부 후 `updateCardRequest` → `deleteCardRequest` 로 변경
+- [x] `src/app/manager/card-requests/page.tsx` — 통계/탭에서 `rejected` 항목 제거
+- [x] `src/app/manager/card-requests/page.tsx` — `syncWithSupabase` → `useQueryParams` + `getCardRequests` 패턴으로 교체 (버그 수정)
+- [x] `src/app/manager/card-requests/page.tsx` — `localStorage("user")` → `useAuthStore` 로 교체 (버그 수정)
+- [x] `src/app/manager/card-requests/columns.tsx` — `onReject` 핸들러 시그니처 수정
+- [x] `src/app/manager/card-requests/columns.tsx` — `prompt()` → `confirm()` 으로 변경
+- [x] `src/app/manager/card-requests/columns.tsx` — `rejected` 상태 뱃지 및 분기 제거
 
 ---
 

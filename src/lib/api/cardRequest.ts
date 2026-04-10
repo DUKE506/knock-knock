@@ -1,5 +1,6 @@
 import { supabase } from "../supabase";
 import { CardRequest } from "@/types/manager/card/cardRequest";
+import { PagedRequest } from "@/types/pagination";
 import { createCard } from "./card";
 import { sendCardActivationEmail } from "./mail";
 
@@ -51,22 +52,38 @@ export async function createCardRequest(data: {
 }
 
 /**
- * 카드 요청 목록 조회 (workplace 기준)
+ * 카드 요청 목록 조회 (workplace 기준, 서버사이드 페이지네이션)
  */
-export async function fetchCardRequests(workplaceId: string) {
-  const { data, error } = await supabase
+export async function fetchCardRequests(
+  workplaceId: string,
+  params: PagedRequest,
+) {
+  const from = (params.pageNumber - 1) * params.pageSize;
+  const to = from + params.pageSize - 1;
+
+  let query = supabase
     .from("card_requests")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("workplace_id", workplaceId)
     .order("requested_at", { ascending: false });
 
+  if (params.search) {
+    query = query.or(
+      `user_name.like.%${params.search}%,user_email.like.%${params.search}%,user_phone.like.%${params.search}%`,
+    );
+  }
+
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
+
   if (error) {
     console.error("카드 요청 목록 조회 실패:", error);
-    return { cardRequests: [], error };
+    return { data: null, error };
   }
 
   // Supabase 형식 → 프론트엔드 형식 변환
-  const cardRequests: CardRequest[] = data.map((row) => ({
+  const cardRequests: CardRequest[] = (data ?? []).map((row) => ({
     id: row.id,
     userName: row.user_name,
     userEmail: row.user_email,
@@ -82,15 +99,25 @@ export async function fetchCardRequests(workplaceId: string) {
       })
       .replace(/\. /g, ".")
       .replace(/\.$/, ""),
-    status: row.status as "pending" | "approved" | "rejected",
+    status: row.status as "pending" | "approved",
     reviewedAt: row.reviewed_at
       ? new Date(row.reviewed_at).toLocaleString("ko-KR")
       : undefined,
     reviewedBy: row.reviewed_by,
-    rejectReason: row.reject_reason,
   }));
 
-  return { cardRequests, error: null };
+  return {
+    data: {
+      data: cardRequests,
+      meta: {
+        pageNumber: params.pageNumber,
+        pageSize: params.pageSize,
+        totalCount: count || 0,
+        totalPages: Math.ceil((count || 0) / params.pageSize),
+      },
+    },
+    error: null,
+  };
 }
 
 /**
@@ -164,29 +191,15 @@ export async function approveCardRequest(id: string, reviewedBy: string) {
 }
 
 /**
- * 카드 요청 거부
+ * 카드 요청 거부 (DB에서 삭제)
  */
-export async function rejectCardRequest(
-  id: string,
-  reviewedBy: string,
-  rejectReason: string,
-) {
-  const { data, error } = await supabase
-    .from("card_requests")
-    .update({
-      status: "rejected",
-      reviewed_at: new Date().toISOString(),
-      reviewed_by: reviewedBy,
-      reject_reason: rejectReason,
-    })
-    .eq("id", id)
-    .select()
-    .single();
+export async function rejectCardRequest(id: string) {
+  const { error } = await supabase.from("card_requests").delete().eq("id", id);
 
   if (error) {
-    console.error("카드 요청 거부 실패:", error);
-    return { cardRequest: null, error };
+    console.error("카드 요청 거부(삭제) 실패:", error);
+    return { error };
   }
 
-  return { cardRequest: data, error: null };
+  return { error: null };
 }

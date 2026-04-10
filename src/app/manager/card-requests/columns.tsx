@@ -61,7 +61,7 @@ export const createCardRequestColumns = (
         },
       };
 
-      const config = statusConfig[row.original.status];
+      const config = statusConfig[row.original.status] ?? statusConfig.pending;
       const Icon = config.icon;
 
       return (
