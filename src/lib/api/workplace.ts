@@ -45,10 +45,8 @@ export async function fetchWorkplaces(params: PagedRequest) {
     name: row.name,
     issueCode: row.issue_code,
     status: row.status as "active" | "pending" | "inactive",
-    credit: {
-      remaining: row.credit_remaining,
-      total: row.credit_total,
-    },
+    creditRemaining: row.credit_remaining,
+    creditTotal: row.credit_total,
     cardCount: row.card_count,
     createdAt: new Date(row.created_at)
       .toISOString()
@@ -65,7 +63,7 @@ export async function fetchWorkplaces(params: PagedRequest) {
         totalCount: count || 0,
         totalPages: Math.ceil((count || 0) / params.pageSize),
       },
-      data: data || [],
+      data: workplaces || [],
     },
     error: null,
   };

@@ -25,18 +25,11 @@ const createWorkplaceSchema = z.object({
     .min(2, "2자 이상 입력하세요")
     .max(30, "30자 이하로 입력하세요"),
   initialCredit: z.number().min(1, "1 크레딧 이상 입력하세요"),
-  managerEmail: z.string().email("이메일 형식을 확인하세요"),
+  managerEmail: z.email("이메일 형식을 확인하세요"),
 });
 
 // 폼 검증 타입
 type CreateWorkplaceFormData = z.infer<typeof createWorkplaceSchema>;
-
-interface WorkplaceFormData {
-  name: string;
-  initialCredit: number;
-  managerEmail?: string;
-  memo?: string;
-}
 
 export default function CreateWorkplaceModal({
   isOpen,
@@ -57,87 +50,81 @@ export default function CreateWorkplaceModal({
   const onSubmit = async (data: CreateWorkplaceFormData) => {
     console.log(data);
 
-    // try {
-    //   // 1. 발급코드 생성
-    //   const issueCode = generateIssueCode();
+    try {
+      // 1-1. 라이센스코드 생성
+      const issueCode = generateIssueCode();
+      // 1-2. 초대코드 생성
+      const inviteCode = generateIssueCode();
 
-    //   // 2. Supabase에 저장
-    //   const { workplace, error } = await createWorkplace({
-    //     name: formData.name,
-    //     issueCode,
-    //     creditTotal: formData.initialCredit,
-    //     managerEmail: formData.managerEmail,
-    //   });
+      // 2. Supabase에 저장
+      const { workplace, error } = await createWorkplace({
+        name: data.name,
+        issueCode,
+        inviteCode,
+        creditTotal: data.initialCredit,
+        managerEmail: data.managerEmail,
+      });
 
-    //   if (error) {
-    //     toast.error("사업장 생성에 실패했습니다.");
-    //     console.error(error);
-    //     return;
-    //   }
+      if (error) {
+        toast.error("사업장 생성에 실패했습니다.");
+        console.error(error);
+        return;
+      }
 
-    //   // 3. Zustand 스토어에 추가 (프론트 형식으로 변환)
-    //   const newWorkplace: Workplace = {
-    //     id: workplace.id,
-    //     name: workplace.name,
-    //     issueCode: workplace.issue_code,
-    //     status: workplace.status as "active" | "pending" | "inactive",
-    //     credit: {
-    //       remaining: workplace.credit_remaining,
-    //       total: workplace.credit_total,
-    //     },
-    //     cardCount: workplace.card_count,
-    //     createdAt: new Date(workplace.created_at)
-    //       .toISOString()
-    //       .split("T")[0]
-    //       .replace(/-/g, "."),
-    //     managerEmail: workplace.manager_email,
-    //   };
+      // 3. Zustand 스토어에 추가 (프론트 형식으로 변환)
+      const newWorkplace: Workplace = {
+        id: workplace.id,
+        name: workplace.name,
+        issueCode: workplace.issue_code,
+        status: workplace.status as "active" | "pending" | "inactive",
+        creditRemaining: workplace.credit_remaining,
+        creditTotal: workplace.credit_total,
+        cardCount: workplace.card_count,
+        createdAt: new Date(workplace.created_at)
+          .toISOString()
+          .split("T")[0]
+          .replace(/-/g, "."),
+        managerEmail: workplace.manager_email,
+      };
 
-    //   addWorkplace(newWorkplace);
+      addWorkplace(newWorkplace);
 
-    //   // 4. 이메일 전송 (선택사항)
-    //   if (formData.managerEmail && formData.managerEmail.trim()) {
-    //     const mailResult = await sendIssueCodeEmail(
-    //       formData.managerEmail,
-    //       formData.name,
-    //       issueCode,
-    //       formData.initialCredit,
-    //     );
+      // 4. 이메일 전송 (선택사항)
+      if (data.managerEmail && data.managerEmail.trim()) {
+        const mailResult = await sendIssueCodeEmail(
+          data.managerEmail,
+          data.name,
+          issueCode,
+          data.initialCredit,
+        );
 
-    //     if (!mailResult.success) {
-    //       console.error("이메일 전송 실패:", mailResult.error);
-    //       toast.warning("사업장은 생성되었지만 이메일 전송에 실패했습니다.", {
-    //         description: `발급코드: ${issueCode}`,
-    //       });
-    //     } else {
-    //       toast.success(
-    //         "사업장이 생성되고 발급코드가 이메일로 전송되었습니다!",
-    //         {
-    //           description: `발급코드: ${issueCode}`,
-    //         },
-    //       );
-    //     }
-    //   } else {
-    //     toast.success("사업장이 생성되었습니다!", {
-    //       description: `발급코드: ${issueCode}`,
-    //     });
-    //   }
+        if (!mailResult.success) {
+          console.error("이메일 전송 실패:", mailResult.error);
+          toast.warning("사업장은 생성되었지만 이메일 전송에 실패했습니다.", {
+            description: `발급코드: ${issueCode}`,
+          });
+        } else {
+          toast.success(
+            "사업장이 생성되고 발급코드가 이메일로 전송되었습니다!",
+            {
+              description: `발급코드: ${issueCode}`,
+            },
+          );
+        }
+      } else {
+        toast.success("사업장이 생성되었습니다!", {
+          description: `발급코드: ${issueCode}`,
+        });
+      }
 
-    //   // 5. 폼 초기화 및 모달 닫기
-    //   setFormData({
-    //     name: "",
-    //     initialCredit: 100,
-    //     managerEmail: "",
-    //     memo: "",
-    //   });
-    //   // setErrors({});
-    //   onClose();
-    // } catch (error) {
-    //   console.error("사업장 생성 실패:", error);
-    //   toast.error("사업장 생성에 실패했습니다.");
-    // } finally {
-    //   setIsLoading(false);
-    // }
+      // 5. 폼 초기화 및 모달 닫기
+      reset();
+      // setErrors({});
+      onClose();
+    } catch (error) {
+      console.error("사업장 생성 실패:", error);
+      toast.error("사업장 생성에 실패했습니다.");
+    }
   };
 
   const handleClose = () => {

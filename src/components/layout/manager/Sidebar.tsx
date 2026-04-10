@@ -27,7 +27,7 @@ const menuItems = [
         label: "카드 발급 관리",
         href: "/manager/card-requests",
       },
-      { icon: Users, label: "담당자 관리", href: "/manager/users" },
+      { icon: Users, label: "관리자", href: "/manager/users" },
       { icon: Coins, label: "크레딧 관리", href: "/manager/credits" },
       { icon: CreditCard, label: "카드 디자인", href: "/manager/card-design" },
     ],

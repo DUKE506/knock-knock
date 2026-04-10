@@ -22,6 +22,9 @@ import {
   rejectCreditRequest,
 } from "@/lib/api/credit";
 import type { CreditHistory } from "@/lib/api/credit";
+import { useQueryParams } from "@/hooks/useQueryParams";
+import { historyColumns } from "./history-colums";
+import { createRequestColumns } from "./request-colums";
 
 type TabType = "requests" | "history";
 
@@ -38,16 +41,18 @@ export default function AdminCreditsPage() {
 
   const {
     creditHistory,
-    syncWithSupabase,
+    meta,
+    fetchCredits,
     updateCreditHistory,
     addCreditHistory,
   } = useCreditHistoryStore();
   const [adminName] = useState("슈퍼관리자"); // TODO: 실제 로그인한 관리자 이름
+  const { page, search, params, setPage, setSearch } = useQueryParams();
 
   // 데이터 로드
   useEffect(() => {
-    syncWithSupabase();
-  }, [syncWithSupabase]);
+    fetchCredits(params);
+  }, [page, search]);
 
   // 탭별 필터링된 데이터
   const requestsData = creditHistory.filter(
@@ -156,172 +161,10 @@ export default function AdminCreditsPage() {
     });
   };
 
-  // 요청 테이블 컬럼
-  const requestColumns: ColumnDef<CreditHistory>[] = [
-    {
-      accessorKey: "workplaceName",
-      header: "사업장",
-      cell: ({ row }) => (
-        <div className="font-medium text-text">
-          {row.original.workplaceName || "-"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "amount",
-      header: "요청 수량",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-2 font-mono">
-          {row.original.amount.toLocaleString()}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "createdBy",
-      header: "요청자",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-2">{row.original.createdBy}</div>
-      ),
-    },
-    {
-      accessorKey: "createdAt",
-      header: "요청일시",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-3 font-mono">
-          {row.original.createdAt}
-        </div>
-      ),
-    },
-    {
-      id: "actions",
-      header: "관리",
-      cell: ({ row }) => (
-        <div className="flex gap-1.5">
-          <Button
-            variant="primary"
-            size="sm"
-            title="승인"
-            onClick={() => handleApprove(row.original.id)}
-          />
-          <Button
-            variant="danger"
-            size="sm"
-            title="거부"
-            onClick={() => handleReject(row.original.id)}
-          />
-        </div>
-      ),
-    },
-  ];
-
-  // 이력 테이블 컬럼
-  const historyColumns: ColumnDef<CreditHistory>[] = [
-    {
-      accessorKey: "type",
-      header: "타입",
-      cell: ({ row }) => {
-        const isIssued = row.original.type === "issued";
-        return (
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${
-              isIssued
-                ? "bg-blue-100 text-blue-600"
-                : "bg-purple-100 text-purple-600"
-            }`}
-          >
-            {isIssued ? (
-              <Zap className="w-3.5 h-3.5" />
-            ) : (
-              <Send className="w-3.5 h-3.5" />
-            )}
-            {isIssued ? "발급" : "요청"}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: "workplaceName",
-      header: "사업장",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-2">
-          {row.original.workplaceName || "-"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "amount",
-      header: "수량",
-      cell: ({ row }) => (
-        <div className="text-sm text-text font-mono">
-          {row.original.amount.toLocaleString()}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "code",
-      header: "코드",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-2 font-mono">
-          {row.original.code || "-"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "email",
-      header: "이메일",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-2">{row.original.email || "-"}</div>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "상태",
-      cell: ({ row }) => {
-        if (row.original.type === "issued") {
-          return <span className="text-xs text-text-3">-</span>;
-        }
-
-        const statusConfig = {
-          pending: {
-            label: "대기중",
-            color: "bg-amber-dim text-amber",
-            icon: Clock,
-          },
-          approved: {
-            label: "승인",
-            color: "bg-green-dim text-green",
-            icon: CheckCircle,
-          },
-          rejected: {
-            label: "거부",
-            color: "bg-red-dim text-red",
-            icon: XCircle,
-          },
-        };
-
-        const config = statusConfig[row.original.status!];
-        const Icon = config.icon;
-
-        return (
-          <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${config.color}`}
-          >
-            <Icon className="w-3.5 h-3.5" />
-            {config.label}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: "createdAt",
-      header: "일시",
-      cell: ({ row }) => (
-        <div className="text-sm text-text-3 font-mono">
-          {row.original.createdAt}
-        </div>
-      ),
-    },
-  ];
+  const requestColumns = createRequestColumns({
+    onApprove: handleApprove,
+    onReject: handleReject,
+  });
 
   return (
     <div className="space-y-6">
@@ -405,6 +248,15 @@ export default function AdminCreditsPage() {
           pageSize={10}
           searchPlaceholder="사업장, 코드, 이메일 검색..."
           emptyMessage="이력이 없습니다."
+          serverSide={{
+            totalCount: meta.totalCount,
+            totalPages: meta.totalPages,
+            currentPage: meta.pageNumber,
+            pageSize: meta.pageSize,
+            currentSearch: search,
+            onPageChange: setPage,
+            onSearch: setSearch,
+          }}
         />
       )}
 

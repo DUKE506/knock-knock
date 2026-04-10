@@ -123,3 +123,79 @@ export async function sendCardActivationEmail(data: {
     html: emailHtml,
   });
 }
+
+/**
+ * 슈퍼관리자 초대링크 메일 발송
+ */
+export async function sendAdminInvite(email: string, inviteUrl: string) {
+  const subject = "Knock-Knock 슈퍼관리자 초대";
+  const text = `
+안녕하세요,
+
+Knock-Knock 슈퍼관리자로 초대되었습니다.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━
+초대 이메일: ${email}
+━━━━━━━━━━━━━━━━━━━━━━━━━
+
+아래 링크를 클릭하여 회원가입을 완료해주세요:
+${inviteUrl}
+
+※ 이 초대 링크는 7일 동안 유효하며, 1회만 사용 가능합니다.
+※ 본인이 요청하지 않은 초대라면 이 메일을 무시해주세요.
+
+감사합니다.
+Knock-Knock 관리팀
+  `.trim();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Malgun Gothic', sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #2563eb; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+    .content { background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; }
+    .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #2563eb; }
+    .button { display: inline-block; background: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+    .footer { padding: 20px; text-align: center; color: #6b7280; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin: 0;">Knock-Knock</h1>
+      <p style="margin: 10px 0 0 0;">슈퍼관리자 초대</p>
+    </div>
+    <div class="content">
+      <p>안녕하세요,</p>
+      <p><strong>Knock-Knock 슈퍼관리자</strong>로 초대되었습니다.</p>
+      
+      <div class="info-box">
+        <strong>초대 이메일:</strong> ${email}
+      </div>
+      
+      <p>아래 버튼을 클릭하여 회원가입을 완료해주세요:</p>
+      
+      <div style="text-align: center;">
+        <a href="${inviteUrl}" class="button">회원가입 하기</a>
+      </div>
+      
+      <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">
+        ※ 이 초대 링크는 <strong>7일 동안 유효</strong>하며, <strong>1회만 사용</strong> 가능합니다.<br>
+        ※ 본인이 요청하지 않은 초대라면 이 메일을 무시해주세요.
+      </p>
+    </div>
+    <div class="footer">
+      <p>Knock-Knock 관리팀<br>
+      이 메일은 자동으로 발송되었습니다.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  return sendMail({ to: email, subject, text, html });
+}

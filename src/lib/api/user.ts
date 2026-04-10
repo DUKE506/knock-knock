@@ -1,4 +1,6 @@
+import { SignJWT } from "jose";
 import { supabase } from "../supabase";
+import { PagedRequest } from "@/types/pagination";
 
 // ============================================
 // 사용자 관련 API
@@ -47,6 +49,51 @@ export async function createUser(data: {
 }
 
 /**
+ * 클라이언트 관리자 초대
+ */
+export async function sendInviteClient(data: {
+  email: string;
+  workplaceId: string;
+}) {
+  console.log("===========================");
+  console.log("발송 이메일 : ", data.email);
+  // 클라이언트 초대 코드 조회
+  const { data: workplace, error } = await supabase
+    .from("workplaces")
+    .select("invite_code,name")
+    .eq("id", data.workplaceId)
+    .single();
+
+  if (error) {
+    console.error("존재하지 않는 사업장입니다.");
+    return;
+  }
+  // 1. url 생성
+  // 1-1. 이메일, 초대코드, 만료일
+  // 2. 발송
+  const token = await new SignJWT({
+    ...data,
+    inviteCode: workplace.invite_code,
+    workplaceName: workplace.name,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("1d")
+    .sign(new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_INVITE_KEY));
+
+  const linkUrl = `http://localhost:3003/auth/client/invite?token=${token}`;
+  console.log("가입 url ");
+  console.log(linkUrl);
+
+  //  const result = await sendAdminInvite(data.email, linkUrl);
+  // if (!result.success) return console.log("메일 전송 실패");
+
+  // console.log("발송 결과 : ");
+  // console.log(result.data);
+
+  console.log("===========================");
+}
+
+/**
  * 이메일로 사용자 조회
  */
 export async function getUserByEmail(email: string) {
@@ -88,7 +135,7 @@ export async function getUserByUsername(username: string) {
 export async function loginUser(email: string, password: string) {
   const { data: user, error } = await supabase
     .from("users")
-    .select("*")
+    .select(`*,workplaces(name)`)
     .eq("email", email)
     .eq("password", password) // TODO: 실제로는 해싱된 비밀번호 비교 필요
     .single();
@@ -97,8 +144,8 @@ export async function loginUser(email: string, password: string) {
     console.error("로그인 실패:", error);
     return { user: null, error };
   }
-
-  return { user, error: null };
+  const { pw, ...rest } = user;
+  return { user: rest, error: null };
 }
 
 /**
@@ -122,16 +169,46 @@ export async function getUsersByWorkplace(workplaceId: string) {
 /**
  * 전체 사용자 조회
  */
-export async function fetchAllUsers() {
-  const { data: users, error } = await supabase
-    .from("users")
-    .select("*")
-    .order("created_at", { ascending: false });
+export async function fetchClientUsers(params: PagedRequest) {
+  const from = (params.pageNumber - 1) * params.pageSize;
+  const to = from + params.pageSize - 1;
+
+  let query = supabase.from("users").select("*").eq("is_admin", false);
+
+  //검색어 필터
+  if (params.search) {
+    query = query.or(`name.like.%${params.search}%`);
+  }
+
+  //페이지네이션
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error("전체 사용자 조회 실패:", error);
     return { users: [], error };
   }
 
-  return { users, error: null };
+  const users: User[] = data.map((row) => ({
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    role: row.role,
+    createdAt: row.created_at,
+    workplaceId: row.workplace_id,
+  }));
+  return {
+    data: {
+      meta: {
+        pageNumber: params.pageNumber,
+        pageSize: params.pageSize,
+        totalCount: count || 0,
+        totalPages: Math.ceil((count || 0) / params.pageSize),
+      },
+      data: users || [],
+    },
+    error: null,
+  };
 }

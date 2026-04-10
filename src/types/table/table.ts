@@ -14,7 +14,7 @@ export interface BaseTableProps<TData> {
   // 클라이언트 사이드 전용
   pageSize?: number; // serverSide 없을 때만 사용
   // 서버 사이드
-  serverSide: ServerSideTableProps;
+  serverSide?: ServerSideTableProps;
 }
 
 export interface PaginationState {
@@ -30,6 +30,7 @@ export interface ServerSideTableProps {
   currentPage: number; // 현재 페이지
   pageSize: number; // 페이지당 개수
   totalPages: number; // 전체 페이지 수
+  currentSearch?: string; //현재 검색어
   onPageChange: (page: number) => void; // 페이지 변경 핸들러
   onSearch?: (query: string) => void; // 검색 핸들러 (선택)
   onSort?: (sortBy: string, sortOrder: "asc" | "desc") => void; // 정렬 핸들러 (선택)

@@ -10,7 +10,7 @@ import {
   SortingState,
   ColumnFiltersState,
 } from "@tanstack/react-table";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -32,18 +32,9 @@ export default function BaseTable<TData>({
 }: BaseTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
-
-  // 서버 사이드 모드: 검색어 변경 시 핸들러 호출
-  useEffect(() => {
-    if (serverSide?.onSearch) {
-      const timer = setTimeout(() => {
-        serverSide.onSearch!(globalFilter);
-      }, 300); // 디바운스 300ms
-
-      return () => clearTimeout(timer);
-    }
-  }, [globalFilter, serverSide]);
+  const [globalFilter, setGlobalFilter] = useState(
+    serverSide?.currentSearch || "",
+  );
 
   const table = useReactTable({
     data,
@@ -112,6 +103,14 @@ export default function BaseTable<TData>({
         totalCount,
       );
 
+  //검색어 변경
+  const handleSearchChange = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // 검색어 입력 후 엔터
+    if (e.key !== "Enter" || !serverSide?.onSearch) return;
+
+    serverSide.onSearch(globalFilter);
+  };
+
   return (
     <div className="space-y-4">
       {/* Search Input */}
@@ -119,8 +118,9 @@ export default function BaseTable<TData>({
         <div>
           <input
             type="text"
-            value={globalFilter ?? ""}
+            value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
+            onKeyDown={handleSearchChange}
             placeholder={searchPlaceholder}
             className="w-full max-w-sm px-3 py-2 bg-surface text-sm border border-border-2 rounded-md outline-none focus:border-accent transition-colors"
             disabled={serverSide?.isLoading}

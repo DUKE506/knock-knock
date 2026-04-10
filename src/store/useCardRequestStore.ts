@@ -2,9 +2,12 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { fetchCardRequests } from "@/lib/api/cardRequest";
 import { CardRequest } from "@/types/manager/card/cardRequest";
+import { PagedRequest } from "@/types/pagination";
+import { PaginationMeta } from "@/types/response";
 
 interface CardRequestStore {
   cardRequests: CardRequest[];
+  meta: PaginationMeta;
   isLoading: boolean;
   error: string | null;
 
@@ -17,13 +20,19 @@ interface CardRequestStore {
   setError: (error: string | null) => void;
 
   // Supabase 동기화
-  syncWithSupabase: (workplaceId: string) => Promise<void>;
+  getCardRequests: (workplaceId: string, params: PagedRequest) => Promise<void>;
 }
 
 export const useCardRequestStore = create<CardRequestStore>()(
   persist(
     (set) => ({
       cardRequests: [],
+      meta: {
+        pageNumber: 1,
+        pageSize: 20,
+        totalCount: 0,
+        totalPages: 0,
+      },
       isLoading: false,
       error: null,
 
@@ -51,17 +60,21 @@ export const useCardRequestStore = create<CardRequestStore>()(
       setError: (error) => set({ error }),
 
       // Supabase에서 데이터 가져오기
-      syncWithSupabase: async (workplaceId: string) => {
+      getCardRequests: async (workplaceId, params) => {
         set({ isLoading: true, error: null });
         try {
-          const { cardRequests, error } = await fetchCardRequests(workplaceId);
-          if (error) {
+          const result = await fetchCardRequests(workplaceId, params);
+          if (result.error) {
             set({
               error: "카드 요청 목록을 불러오는데 실패했습니다.",
               isLoading: false,
             });
           } else {
-            set({ cardRequests, isLoading: false });
+            set({
+              meta: result.data.meta,
+              cardRequests: result.data.data,
+              isLoading: false,
+            });
           }
         } catch (err) {
           set({ error: "데이터 동기화 실패", isLoading: false });

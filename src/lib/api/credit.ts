@@ -1,3 +1,4 @@
+import { PagedRequest } from "@/types/pagination";
 import { supabase } from "../supabase";
 import { generateIssueCode } from "@/lib/utils/generateIssueCode";
 
@@ -89,11 +90,17 @@ export async function createCreditRequest(data: {
 /**
  * 크레딧 이력 조회 (전체 또는 타입별)
  */
-export async function fetchCreditHistory(filters?: {
-  type?: "issued" | "requested";
-  status?: "pending" | "approved" | "rejected";
-  workplaceId?: string;
-}) {
+export async function fetchCreditHistory(
+  params: PagedRequest,
+  filters?: {
+    type?: "issued" | "requested";
+    status?: "pending" | "approved" | "rejected";
+    workplaceId?: string;
+  },
+) {
+  const from = (params.pageNumber - 1) * params.pageSize;
+  const to = from + params.pageSize - 1;
+
   let query = supabase.from("credit_history").select("*");
 
   if (filters?.type) {
@@ -110,7 +117,20 @@ export async function fetchCreditHistory(filters?: {
 
   query = query.order("created_at", { ascending: false });
 
-  const { data, error } = await query;
+  //검색어 필터
+  if (params.search) {
+    query = query.or(`workplace_name.like.%${params.search}%`);
+  }
+  //정렬(옵션)
+  if (params.sortBy) {
+    query = query.order(params.sortBy, {
+      ascending: params.sortOrder === "asc",
+    });
+  }
+  // 페이지네이션 적용
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error("크레딧 이력 조회 실패:", error);
@@ -136,7 +156,18 @@ export async function fetchCreditHistory(filters?: {
     reviewedBy: row.reviewed_by,
   }));
 
-  return { creditHistory, error: null };
+  return {
+    data: {
+      meta: {
+        pageNumber: params.pageNumber,
+        pageSize: params.pageSize,
+        totalCount: count || 0,
+        totalPages: Math.ceil((count || 0) / params.pageSize),
+      },
+      data: creditHistory || [],
+    },
+    error: null,
+  };
 }
 
 /**

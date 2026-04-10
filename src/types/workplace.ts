@@ -5,10 +5,12 @@ export interface Workplace {
   name: string;
   issueCode: string;
   status: WorkplaceStatus;
-  credit: {
-    remaining: number;
-    total: number;
-  };
+  creditRemaining: number;
+  creditTotal: number;
+  // credit: {
+  //   remaining: number;
+  //   total: number;
+  // };
   cardCount: number;
   createdAt: string;
   managerName?: string;

@@ -66,7 +66,8 @@ export const workplaceColumns: ColumnDef<Workplace>[] = [
     accessorKey: "credit",
     header: "크레딧",
     cell: ({ row }) => {
-      const { remaining, total } = row.original.credit;
+      const remaining = row.original.creditRemaining;
+      const total = row.original.creditTotal;
       const percentage = Math.round((remaining / total) * 100);
 
       let barColor = "bg-accent";
@@ -94,7 +95,7 @@ export const workplaceColumns: ColumnDef<Workplace>[] = [
     header: "카드수",
     cell: ({ row }) => (
       <span className="font-mono text-xs text-text-2">
-        {row.original.cardCount.toLocaleString()}
+        {row.original.cardCount}
       </span>
     ),
   },

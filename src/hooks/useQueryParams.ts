@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { PagedRequest } from "@/types/pagination";
 
 interface UseQueryParamsOptions {
   initialPage?: number;
+  initialPageSize?: number;
   initialSearch?: string;
 }
 
@@ -20,6 +22,7 @@ export function useQueryParams(options: UseQueryParamsOptions = {}) {
 
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState(initialSearch);
+  const pageSize = options.initialPageSize || 20;
 
   // 쿼리스트링 업데이트
   useEffect(() => {
@@ -44,9 +47,16 @@ export function useQueryParams(options: UseQueryParamsOptions = {}) {
     setPage(1); // 검색 시 첫 페이지로
   };
 
+  const params: PagedRequest = {
+    pageNumber: page,
+    pageSize,
+    search: search || undefined,
+  };
+
   return {
     page,
     search,
+    params,
     setPage: handlePageChange,
     setSearch: handleSearch,
   };

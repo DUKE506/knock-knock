@@ -31,7 +31,7 @@ export default function AdminLayout({
         <TopNav title={pageConfig.title} subtitle={pageConfig.subtitle} />
         <div className="p-7 flex-1">{children}</div>
       </main>
-      <Toaster position="top-right" richColors />
+      {/* <Toaster position="top-right" richColors /> */}
     </div>
   );
 }

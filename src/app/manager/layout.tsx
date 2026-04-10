@@ -11,7 +11,7 @@ const PAGE_CONFIG: Record<string, { title: string; subtitle?: string }> = {
     title: "카드 발급 관리",
     subtitle: "승인/거부 관리",
   },
-  "/manager/users": { title: "담당자 관리", subtitle: "사업장 담당자 목록" },
+  "/manager/users": { title: "관리자", subtitle: "고객사 관리자 목록" },
   "/manager/credits": {
     title: "크레딧 관리",
     subtitle: "잔여 크레딧 확인 및 충전",
