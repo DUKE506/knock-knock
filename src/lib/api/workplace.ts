@@ -152,6 +152,39 @@ export async function updateWorkplace(
 }
 
 /**
+ * 단일 사업장 조회
+ */
+export async function fetchWorkplaceById(id: string) {
+  const { data, error } = await supabase
+    .from("workplaces")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error("사업장 조회 실패:", error);
+    return { workplace: null, error };
+  }
+
+  const workplace: Workplace = {
+    id: data.id,
+    name: data.name,
+    issueCode: data.issue_code,
+    status: data.status as "active" | "pending" | "inactive",
+    creditRemaining: data.credit_remaining,
+    creditTotal: data.credit_total,
+    cardCount: data.card_count,
+    createdAt: new Date(data.created_at)
+      .toISOString()
+      .split("T")[0]
+      .replace(/-/g, "."),
+    managerEmail: data.manager_email,
+  };
+
+  return { workplace, error: null };
+}
+
+/**
  * 사업장 삭제
  */
 export async function deleteWorkplace(id: string) {

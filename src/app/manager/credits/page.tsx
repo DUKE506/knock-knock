@@ -1,121 +1,72 @@
 "use client";
 
-import { useState } from "react";
-import { Coins, Plus, Zap, ArrowRight } from "lucide-react";
-import Button from "@/components/common/Button";
-import { toast } from "sonner";
-import { createCreditRequest, redeemCreditCode } from "@/lib/api/credit";
+import { useEffect, useState, useCallback } from "react";
+import { Coins } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
+import { fetchWorkplaceById } from "@/lib/api/workplace";
+import { fetchCreditHistory, CreditHistory } from "@/lib/api/credit";
+import { useQueryParams } from "@/hooks/useQueryParams";
+import BaseTable from "@/components/common/table/BaseTable";
+import { creditHistoryColumns } from "./columns";
 
 export default function CreditsPage() {
-  const [currentCredits] = useState(150); // TODO: 실제 크레딧 정보
-  const [totalCredits] = useState(500); // TODO: 전체 크레딧
+  const user = useAuthStore((s) => s.user);
+  const workplaceId = user?.workplaceId ?? "";
 
-  // 충전 요청
-  const [requestAmount, setRequestAmount] = useState("");
-  const [isRequestLoading, setIsRequestLoading] = useState(false);
+  // 크레딧 현황
+  const [creditRemaining, setCreditRemaining] = useState<number | null>(null);
+  const [creditTotal, setCreditTotal] = useState<number | null>(null);
+  const [creditLoading, setCreditLoading] = useState(true);
 
-  // 충전 코드 입력
-  const [rechargeCode, setRechargeCode] = useState("");
-  const [isRechargeLoading, setIsRechargeLoading] = useState(false);
+  // 이력 테이블
+  const [history, setHistory] = useState<CreditHistory[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [historyLoading, setHistoryLoading] = useState(true);
 
-  // TODO: 실제 사업장 정보 가져오기
-  const getUserWorkplaceInfo = () => {
-    const userStr = localStorage.getItem("user");
-    if (!userStr) return null;
+  const { params, setPage, setSearch } = useQueryParams({ initialPageSize: 10 });
 
-    try {
-      const user = JSON.parse(userStr);
-
-      return {
-        workplaceId: user.workplace_id || "",
-        workplaceName: user.workplaceName || "",
-        managerName: user.name || "",
-      };
-    } catch {
-      return null;
-    }
-  };
-
-  const workplaceInfo = getUserWorkplaceInfo();
-  const workplaceId = workplaceInfo?.workplaceId || "";
-  const workplaceName = workplaceInfo?.workplaceName || "";
-  const managerName = workplaceInfo?.managerName || "";
-
-  // 크레딧 충전 요청
-  const handleCreditRequest = async () => {
-    if (!requestAmount || parseInt(requestAmount) <= 0) {
-      toast.error("요청 수량을 입력해주세요.");
-      return;
-    }
-
-    if (!workplaceId) {
-      toast.error("사업장 정보를 찾을 수 없습니다.");
-      return;
-    }
-
-    setIsRequestLoading(true);
-
-    try {
-      const { creditHistory, error } = await createCreditRequest({
-        amount: parseInt(requestAmount),
-        workplaceId,
-        workplaceName,
-        createdBy: managerName,
-      });
-
-      if (error) {
-        toast.error("크레딧 요청에 실패했습니다.");
-        return;
+  // 크레딧 현황 로드
+  useEffect(() => {
+    if (!workplaceId) return;
+    setCreditLoading(true);
+    fetchWorkplaceById(workplaceId).then(({ workplace }) => {
+      if (workplace) {
+        setCreditRemaining(workplace.creditRemaining);
+        setCreditTotal(workplace.creditTotal);
       }
+      setCreditLoading(false);
+    });
+  }, [workplaceId]);
 
-      toast.success(`${requestAmount}개 크레딧 충전 요청이 완료되었습니다.`);
-      setRequestAmount("");
-    } catch (err) {
-      toast.error("요청 중 오류가 발생했습니다.");
-    } finally {
-      setIsRequestLoading(false);
+  // 이력 로드
+  const loadHistory = useCallback(async () => {
+    if (!workplaceId) return;
+    setHistoryLoading(true);
+    const { data, error } = await fetchCreditHistory(params, { workplaceId });
+    if (!error && data) {
+      setHistory(data.data);
+      setTotalCount(data.meta.totalCount);
+      setTotalPages(data.meta.totalPages);
     }
-  };
+    setHistoryLoading(false);
+  }, [workplaceId, params]);
 
-  // 충전 코드 입력
-  const handleRechargeCode = async () => {
-    if (!rechargeCode.trim()) {
-      toast.error("충전 코드를 입력해주세요.");
-      return;
-    }
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
 
-    setIsRechargeLoading(true);
-
-    try {
-      const { success, amount, error } = await redeemCreditCode(
-        rechargeCode,
-        workplaceId,
-      );
-
-      if (!success || error) {
-        toast.error(error || "코드 사용에 실패했습니다.");
-        return;
-      }
-
-      toast.success(`${amount}개 크레딧이 충전되었습니다!`);
-      setRechargeCode("");
-
-      // TODO: 크레딧 잔액 새로고침
-    } catch (err) {
-      toast.error("코드 처리 중 오류가 발생했습니다.");
-    } finally {
-      setIsRechargeLoading(false);
-    }
-  };
-
-  const creditPercentage = (currentCredits / totalCredits) * 100;
+  const creditRemaining_ = creditRemaining ?? 0;
+  const creditTotal_ = creditTotal ?? 0;
+  const remainingPercentage = creditTotal_ > 0 ? (creditRemaining_ / creditTotal_) * 100 : 0;
+  const usedPercentage = 100 - remainingPercentage;
 
   return (
     <>
       {/* Page Header */}
       <div className="mb-7">
         <h1 className="text-2xl font-semibold text-text">크레딧 관리</h1>
-        <p className="text-sm text-text-3 mt-1">잔여 크레딧 확인 및 충전</p>
+        <p className="text-sm text-text-3 mt-1">잔여 크레딧 확인 및 충전 이력</p>
       </div>
 
       <div className="space-y-6">
@@ -128,16 +79,24 @@ export default function CreditsPage() {
               </div>
               <div>
                 <p className="text-sm opacity-90">현재 잔여 크레딧</p>
-                <p className="text-3xl font-bold">
-                  {currentCredits.toLocaleString()}
-                </p>
+                {creditLoading ? (
+                  <p className="text-3xl font-bold opacity-60">-</p>
+                ) : (
+                  <p className="text-3xl font-bold">
+                    {(creditRemaining ?? 0).toLocaleString()}
+                  </p>
+                )}
               </div>
             </div>
             <div className="text-right">
               <p className="text-sm opacity-90">총 크레딧</p>
-              <p className="text-xl font-semibold">
-                {totalCredits.toLocaleString()}
-              </p>
+              {creditLoading ? (
+                <p className="text-xl font-semibold opacity-60">-</p>
+              ) : (
+                <p className="text-xl font-semibold">
+                  {(creditTotal ?? 0).toLocaleString()}
+                </p>
+              )}
             </div>
           </div>
 
@@ -145,126 +104,31 @@ export default function CreditsPage() {
           <div className="relative h-2 bg-white/20 rounded-full overflow-hidden">
             <div
               className="absolute left-0 top-0 h-full bg-white transition-all duration-500"
-              style={{ width: `${creditPercentage}%` }}
+              style={{ width: `${remainingPercentage}%` }}
             />
           </div>
           <p className="text-xs opacity-75 mt-2">
-            {creditPercentage.toFixed(1)}% 사용 중
+            {creditLoading ? "로딩 중..." : `${usedPercentage.toFixed(1)}% 사용 중`}
           </p>
         </div>
 
-        {/* 크레딧 충전 요청 */}
-        <div className="bg-surface border border-border rounded-lg p-6">
-          <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
-            <div className="w-8 h-8 rounded-md bg-accent-dim flex items-center justify-center">
-              <Plus className="w-4 h-4 text-accent" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-text">
-                크레딧 충전 요청
-              </h2>
-              <p className="text-xs text-text-3">
-                슈퍼관리자에게 크레딧 충전을 요청합니다
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {/* 요청 수량 입력 */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                요청 수량 <span className="text-red">*</span>
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  value={requestAmount}
-                  onChange={(e) => setRequestAmount(e.target.value)}
-                  placeholder="예: 100"
-                  min="1"
-                  className="flex-1 px-4 py-2.5 text-sm border border-border rounded-md outline-none focus:border-accent transition-colors"
-                  disabled={isRequestLoading}
-                />
-                <Button
-                  variant="primary"
-                  size="md"
-                  title="요청하기"
-                  onClick={handleCreditRequest}
-                  disabled={isRequestLoading}
-                  icon={ArrowRight}
-                />
-              </div>
-              <p className="text-xs text-text-3 mt-2">
-                ※ 요청 후 슈퍼관리자 승인 시 충전 코드가 이메일로 발송됩니다
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* 충전 코드 입력 */}
-        <div className="bg-surface border border-border rounded-lg p-6">
-          <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
-            <div className="w-8 h-8 rounded-md bg-amber-dim flex items-center justify-center">
-              <Zap className="w-4 h-4 text-amber" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-text">
-                충전 코드 입력
-              </h2>
-              <p className="text-xs text-text-3">
-                이메일로 받은 충전 코드를 입력하세요
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {/* 충전 코드 입력 */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                충전 코드 <span className="text-red">*</span>
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={rechargeCode}
-                  onChange={(e) =>
-                    setRechargeCode(e.target.value.toUpperCase())
-                  }
-                  placeholder="예: ABCD-EFGH-1234"
-                  className="flex-1 px-4 py-2.5 text-sm border border-border rounded-md outline-none focus:border-accent transition-colors font-mono"
-                  disabled={isRechargeLoading}
-                  maxLength={19}
-                />
-                <Button
-                  variant="primary"
-                  size="md"
-                  title="충전하기"
-                  onClick={handleRechargeCode}
-                  disabled={isRechargeLoading}
-                  icon={Zap}
-                />
-              </div>
-              <p className="text-xs text-text-3 mt-2">
-                ※ 충전 코드는 1회만 사용 가능하며, 입력 즉시 크레딧이 충전됩니다
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* 안내 메시지 */}
-        <div className="bg-accent-dim border border-accent/20 rounded-lg p-4">
-          <p className="text-sm text-accent">
-            💡 크레딧 충전 절차
-            <br />
-            1. 충전 요청 수량 입력 후 요청하기
-            <br />
-            2. 슈퍼관리자 승인 대기
-            <br />
-            3. 이메일로 충전 코드 수신
-            <br />
-            4. 충전 코드 입력 후 충전 완료
-          </p>
-        </div>
+        {/* 크레딧 이력 테이블 */}
+        <BaseTable
+          data={history}
+          columns={creditHistoryColumns}
+          emptyMessage="충전 이력이 없습니다."
+          searchPlaceholder="처리자 검색"
+          serverSide={{
+            totalCount,
+            currentPage: params.pageNumber,
+            pageSize: params.pageSize,
+            totalPages,
+            currentSearch: params.search,
+            isLoading: historyLoading,
+            onPageChange: setPage,
+            onSearch: setSearch,
+          }}
+        />
       </div>
     </>
   );

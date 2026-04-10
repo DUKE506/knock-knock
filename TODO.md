@@ -64,12 +64,12 @@
 
 ### Task 2-C: 고객사 크레딧 페이지 리팩토링
 
-- [ ] `src/app/manager/credits/page.tsx` — 충전 요청 폼 제거
-- [ ] `src/app/manager/credits/page.tsx` — 충전 코드 입력 폼 제거
-- [ ] `src/app/manager/credits/page.tsx` — 안내 메시지 제거
-- [ ] `src/app/manager/credits/page.tsx` — 크레딧 현황 카드 실제 데이터 연동
-- [ ] `src/app/manager/credits/page.tsx` — 이력 테이블 추가 (workplaceId 필터)
-- [ ] `src/app/manager/credits/columns.tsx` — 이력 컬럼 신규 생성
+- [x] `src/app/manager/credits/page.tsx` — 충전 요청 폼 제거
+- [x] `src/app/manager/credits/page.tsx` — 충전 코드 입력 폼 제거
+- [x] `src/app/manager/credits/page.tsx` — 안내 메시지 제거
+- [x] `src/app/manager/credits/page.tsx` — 크레딧 현황 카드 실제 데이터 연동
+- [x] `src/app/manager/credits/page.tsx` — 이력 테이블 추가 (workplaceId 필터)
+- [x] `src/app/manager/credits/columns.tsx` — 이력 컬럼 신규 생성
 
 ---
 
