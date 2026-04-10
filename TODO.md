@@ -49,18 +49,18 @@
 
 ### Task 2-B: 슈퍼관리자 크레딧 페이지 리팩토링
 
-- [ ] `src/components/admin/credits/CreateCreditModal.tsx` → `ChargeCreditModal.tsx` 신규 작성
-  - [ ] 사업장 드롭다운 (useWorkplaceStore 재사용)
-  - [ ] 수량 입력 폼
-  - [ ] `chargeCreditsToWorkplace()` 호출
-- [ ] `src/app/admin/credits/page.tsx` — 탭 시스템 제거
-- [ ] `src/app/admin/credits/page.tsx` — 요청 승인/거부 핸들러 제거
-- [ ] `src/app/admin/credits/page.tsx` — "코드 발급" → "크레딧 충전" 버튼으로 교체
-- [ ] `src/app/admin/credits/page.tsx` — `ChargeCreditModal` 연결
-- [ ] `src/app/admin/credits/page.tsx` — 이력 테이블만 남기기
-- [ ] `src/app/admin/credits/history-colums.tsx` — `code` / `email` 컬럼 제거
-- [ ] `src/app/admin/credits/history-colums.tsx` — `status` 로직 단순화
-- [ ] `src/app/admin/credits/request-colums.tsx` — 파일 삭제
+- [x] `src/components/admin/credits/CreateCreditModal.tsx` → `ChargeCreditModal.tsx` 신규 작성
+  - [x] 고객사 드롭다운 (useWorkplaceStore 재사용, 커스텀 Select 컴포넌트)
+  - [x] 수량 입력 폼
+  - [x] `chargeCreditsToWorkplace()` 호출
+- [x] `src/app/admin/credits/page.tsx` — 탭 시스템 제거
+- [x] `src/app/admin/credits/page.tsx` — 요청 승인/거부 핸들러 제거
+- [x] `src/app/admin/credits/page.tsx` — "코드 발급" → "크레딧 충전" 버튼으로 교체
+- [x] `src/app/admin/credits/page.tsx` — `ChargeCreditModal` 연결
+- [x] `src/app/admin/credits/page.tsx` — 이력 테이블만 남기기
+- [x] `src/app/admin/credits/history-colums.tsx` — `code` / `email` 컬럼 제거
+- [x] `src/app/admin/credits/history-colums.tsx` — `status` 로직 단순화
+- [x] `src/app/admin/credits/request-colums.tsx` — 파일 삭제
 
 ### Task 2-C: 고객사 크레딧 페이지 리팩토링
 
