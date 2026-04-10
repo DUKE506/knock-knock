@@ -8,7 +8,7 @@ import { createCardRequest } from "@/lib/api/cardRequest";
 export default function DemoPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    inviteCode: "",
+    issueCode: "",
     userName: "",
     userPhone: "",
     userEmail: "",
@@ -19,7 +19,7 @@ export default function DemoPage() {
 
     // 간단한 검증
     if (
-      !formData.inviteCode ||
+      !formData.issueCode ||
       !formData.userName ||
       !formData.userPhone ||
       !formData.userEmail
@@ -32,7 +32,7 @@ export default function DemoPage() {
 
     try {
       const { cardRequest, error } = await createCardRequest({
-        inviteCode: formData.inviteCode,
+        issueCode: formData.issueCode,
         userName: formData.userName,
         userPhone: formData.userPhone,
         userEmail: formData.userEmail,
@@ -46,7 +46,7 @@ export default function DemoPage() {
         toast.success("카드 발급 요청이 완료되었습니다!");
         // 폼 초기화
         setFormData({
-          inviteCode: "",
+          issueCode: "",
           userName: "",
           userPhone: "",
           userEmail: "",
@@ -94,11 +94,11 @@ export default function DemoPage() {
               </label>
               <input
                 type="text"
-                value={formData.inviteCode}
+                value={formData.issueCode}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    inviteCode: e.target.value.toUpperCase(),
+                    issueCode: e.target.value.toUpperCase(),
                   })
                 }
                 placeholder="예: ABCD-EFGH-IJKL-MNOP"

@@ -2,6 +2,14 @@
 
 > 관련 문서: [CLAUDE.md](CLAUDE.md) | [PLAN.md](PLAN.md)
 
+## 체크박스 규칙
+
+| 표시 | 의미 |
+|------|------|
+| `[ ]` | 개발 전 |
+| `[△]` | 구현 완료, 미확인 또는 문제 있음 |
+| `[x]` | 완료 (확인됨) |
+
 ---
 
 ## Phase 1: 간단한 수정
@@ -34,10 +42,10 @@
 
 ### Task 2-A: 크레딧 API 수정
 
-- [ ] `src/lib/api/credit.ts` — `CreditHistory.type`에 `"charged"` 추가
-- [ ] `src/lib/api/credit.ts` — `chargeCreditsToWorkplace()` 함수 추가
-  - [ ] workplaces 테이블 `credit_remaining` / `credit_total` 업데이트
-  - [ ] credit_history에 `type: "charged"` 이력 삽입
+- [△] `src/lib/api/credit.ts` — `CreditHistory.type`에 `"charged"` 추가
+- [△] `src/lib/api/credit.ts` — `chargeCreditsToWorkplace()` 함수 추가
+  - [△] workplaces 테이블 `credit_remaining` / `credit_total` 업데이트
+  - [△] credit_history에 `type: "charged"` 이력 삽입
 
 ### Task 2-B: 슈퍼관리자 크레딧 페이지 리팩토링
 

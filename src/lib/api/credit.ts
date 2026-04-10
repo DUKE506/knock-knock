@@ -8,7 +8,7 @@ import { generateIssueCode } from "@/lib/utils/generateIssueCode";
 
 export interface CreditHistory {
   id: string;
-  type: "issued" | "requested";
+  type: "issued" | "requested" | "charged";
   amount: number;
   workplaceId: string;
   workplaceName: string;
@@ -291,4 +291,60 @@ export async function redeemCreditCode(code: string, workplaceId: string) {
     .eq("code", code);
 
   return { success: true, amount: creditHistory.amount, error: null };
+}
+
+/**
+ * 크레딧 직접 충전 (슈퍼관리자 → 사업장)
+ */
+export async function chargeCreditsToWorkplace(data: {
+  workplaceId: string;
+  workplaceName: string;
+  amount: number;
+  createdBy: string;
+}) {
+  // 1. 현재 크레딧 조회
+  const { data: workplace, error: fetchError } = await supabase
+    .from("workplaces")
+    .select("credit_remaining, credit_total")
+    .eq("id", data.workplaceId)
+    .single();
+
+  if (fetchError || !workplace) {
+    console.error("사업장 조회 실패:", fetchError);
+    return { data: null, error: fetchError ?? new Error("사업장 정보를 찾을 수 없습니다.") };
+  }
+
+  // 2. 크레딧 업데이트
+  const { error: updateError } = await supabase
+    .from("workplaces")
+    .update({
+      credit_remaining: workplace.credit_remaining + data.amount,
+      credit_total: workplace.credit_total + data.amount,
+    })
+    .eq("id", data.workplaceId);
+
+  if (updateError) {
+    console.error("크레딧 충전 실패:", updateError);
+    return { data: null, error: updateError };
+  }
+
+  // 3. 충전 이력 삽입
+  const { data: history, error: historyError } = await supabase
+    .from("credit_history")
+    .insert({
+      type: "charged",
+      amount: data.amount,
+      workplace_id: data.workplaceId,
+      workplace_name: data.workplaceName,
+      created_by: data.createdBy,
+    })
+    .select()
+    .single();
+
+  if (historyError) {
+    console.error("크레딧 이력 삽입 실패:", historyError);
+    return { data: null, error: historyError };
+  }
+
+  return { data: history, error: null };
 }
