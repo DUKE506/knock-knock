@@ -30,6 +30,7 @@ export default function CardDetailModal({
   const [cardData, setCardData] = useState<{
     cardNumber: string;
     activationCode: string;
+    isActivated: boolean;
     expiresAt: string;
     status: string;
   } | null>(null);
@@ -58,6 +59,7 @@ export default function CardDetailModal({
       setCardData({
         cardNumber: card.cardNumber,
         activationCode: card.activationCode,
+        isActivated: card.isActivated,
         expiresAt: card.expiresAt,
         status: card.status,
       });
@@ -159,8 +161,8 @@ export default function CardDetailModal({
             </div>
           </div>
 
-          {/* 활성화번호 (읽기 전용) */}
-          {cardData && (
+          {/* 활성화번호 (모바일 미등록 시에만 표시) */}
+          {cardData && !cardData.isActivated && (
             <div>
               <h3 className="text-sm font-semibold text-text mb-3 flex items-center gap-2">
                 <Key className="w-4 h-4" />
@@ -178,6 +180,21 @@ export default function CardDetailModal({
                 </div>
                 <p className="text-xs text-accent/70 mt-3">
                   ※ 사용자 이메일로 전송된 번호입니다
+                </p>
+              </div>
+            </div>
+          )}
+          {/* 모바일 활성화 완료 표시 */}
+          {cardData && cardData.isActivated && (
+            <div>
+              <h3 className="text-sm font-semibold text-text mb-3 flex items-center gap-2">
+                <Key className="w-4 h-4" />
+                활성화번호
+              </h3>
+              <div className="bg-green-dim border border-green/20 rounded-md px-4 py-3">
+                <p className="text-xs text-green leading-relaxed flex items-center gap-1.5">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  모바일 활성화 완료
                 </p>
               </div>
             </div>

@@ -63,14 +63,28 @@ export const createCardRequestColumns = (
 
       const config = statusConfig[row.original.status] ?? statusConfig.pending;
       const Icon = config.icon;
+      const { isActivated } = row.original;
 
       return (
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${config.color}`}
-        >
-          <Icon className="w-3.5 h-3.5" />
-          {config.label}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${config.color}`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {config.label}
+          </span>
+          {row.original.status === "approved" && isActivated !== undefined && (
+            <span
+              className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                isActivated
+                  ? "bg-green-dim text-green"
+                  : "bg-amber-dim text-amber"
+              }`}
+            >
+              {isActivated ? "활성화됨" : "미활성화"}
+            </span>
+          )}
+        </div>
       );
     },
   },

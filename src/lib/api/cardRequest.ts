@@ -63,7 +63,7 @@ export async function fetchCardRequests(
 
   let query = supabase
     .from("card_requests")
-    .select("*", { count: "exact" })
+    .select("*, cards(is_activated)", { count: "exact" })
     .eq("workplace_id", workplaceId)
     .order("requested_at", { ascending: false });
 
@@ -104,6 +104,10 @@ export async function fetchCardRequests(
       ? new Date(row.reviewed_at).toLocaleString("ko-KR")
       : undefined,
     reviewedBy: row.reviewed_by,
+    isActivated:
+      Array.isArray(row.cards) && row.cards.length > 0
+        ? (row.cards[0].is_activated as boolean)
+        : undefined,
   }));
 
   return {

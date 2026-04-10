@@ -77,14 +77,14 @@
 
 ### Task 3-A: 승인된 카드의 모바일 활성화 여부 구분
 
-- [ ] `src/lib/api/cardRequest.ts` — `fetchCardRequests` 쿼리에 `cards` 테이블 조인
-- [ ] `src/lib/api/cardRequest.ts` — `isActivated` 필드 매핑 추가
-- [ ] `src/types/manager/card/cardRequest.ts` — `isActivated?: boolean` 필드 추가
-- [ ] `src/app/manager/card-requests/columns.tsx` — 승인 상태에 활성화 서브 뱃지 추가
-  - [ ] `isActivated === true` → "활성화됨" (green)
-  - [ ] `isActivated === false` → "미활성화" (amber)
-- [ ] `src/components/manager/cards/CardDetailModal.tsx` — `isActivated === false` 일 때만 활성화번호 표시
-- [ ] `src/components/manager/cards/CardDetailModal.tsx` — `isActivated === true` 일 때 "모바일 활성화 완료" 메시지 표시
+- [△] `src/lib/api/cardRequest.ts` — `fetchCardRequests` 쿼리에 `cards` 테이블 조인
+- [△] `src/lib/api/cardRequest.ts` — `isActivated` 필드 매핑 추가
+- [△] `src/types/manager/card/cardRequest.ts` — `isActivated?: boolean` 필드 추가
+- [△] `src/app/manager/card-requests/columns.tsx` — 승인 상태에 활성화 서브 뱃지 추가
+  - [△] `isActivated === true` → "활성화됨" (green)
+  - [△] `isActivated === false` → "미활성화" (amber)
+- [△] `src/components/manager/cards/CardDetailModal.tsx` — `isActivated === false` 일 때만 활성화번호 표시
+- [△] `src/components/manager/cards/CardDetailModal.tsx` — `isActivated === true` 일 때 "모바일 활성화 완료" 메시지 표시
 
 ---
 

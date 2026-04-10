@@ -9,4 +9,5 @@ export interface CardRequest {
   status: CardRequestStatus;
   reviewedAt?: string;
   reviewedBy?: string;
+  isActivated?: boolean;
 }
