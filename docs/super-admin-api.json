@@ -1,0 +1,419 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "SportalSuperAdminApi",
+    "version": "v1"
+  },
+  "paths": {
+    "/api/v1/SuperLogin/W/Login": {
+      "post": {
+        "tags": ["Login"],
+        "summary": "슈퍼관리자 로그인[체크완료]",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Login_Request_LoginDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperLogin/W/Refresh": {
+      "post": {
+        "tags": ["Login"],
+        "summary": "슈퍼관리자 토큰 재발급[체크완료]",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Login_Request_RefreshTokenDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperLogin/W/sign/Logout": {
+      "get": {
+        "tags": ["Login"],
+        "summary": "관리자 로그아웃[체크완료]",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperLogin/W/sign/MyProfile": {
+      "get": {
+        "tags": ["Login"],
+        "summary": "관리자 프로필 조회",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperRegister/W/ExistsSuperMaster": {
+      "post": {
+        "tags": ["Register"],
+        "summary": "슈퍼관리자 아이디 중복검사",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Register_SuperMaster_Request_ExistsSuperMasterLoginIdDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperRegister/W/sign/InviteSuperMaster": {
+      "post": {
+        "tags": ["Register"],
+        "summary": "슈퍼관리자 초대메일 발송",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Register_SuperMaster_Request_SendSuperMasterInviteDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperRegister/W/AddSuperMaster": {
+      "post": {
+        "tags": ["Register"],
+        "summary": "슈퍼관리자 추가",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Register_SuperMaster_Request_AddSuperMasterDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperRegister/W/sign/GetSuperMasterList": {
+      "get": {
+        "tags": ["Register"],
+        "summary": "슈퍼관리자 전체조회",
+        "parameters": [
+          { "name": "pageNumber", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "pageSize", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "searchKey", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperRegister/W/sign/RemoveSuperMaster": {
+      "delete": {
+        "tags": ["Register"],
+        "summary": "슈퍼관리자 삭제",
+        "parameters": [
+          { "name": "adminSeq", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/AddSite": {
+      "post": {
+        "tags": ["Site"],
+        "summary": "사업장 추가",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Site_Request_AddSiteDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/ExistsMainMaster": {
+      "post": {
+        "tags": ["Site"],
+        "summary": "메인관리자 아이디 중복 검사",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Register_Master_Request_ExistsMainMasterLoginIdDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/InviteMainMaster": {
+      "post": {
+        "tags": ["Site"],
+        "summary": "메인관리자 초대메일",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Register_Master_Request_SendMainMasterInviteDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/AddMainMaster": {
+      "post": {
+        "tags": ["Site"],
+        "summary": "메인 마스터 추가",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Register_Master_Request_AddMainMasterDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/AddCreditIssue": {
+      "post": {
+        "tags": ["Site"],
+        "summary": "슈퍼마스터 크래딧 발급",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Site_Request_AddCreditIssueDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/GetSiteList": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "사이트 리스트 조회",
+        "parameters": [
+          { "name": "pageNumber", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "pageSize", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "searchKey", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/GetSiteDetail": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "사업장 상세정보 조회",
+        "parameters": [
+          { "name": "siteKey", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/GetCreditHistory": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "사업장 크레딧 이력 조회",
+        "parameters": [
+          { "name": "pageNumber", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "pageSize", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "siteKey", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "gubun", "in": "query", "schema": { "type": "integer", "format": "int32" } },
+          { "name": "searchKey", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/UpdateSite": {
+      "patch": {
+        "tags": ["Site"],
+        "summary": "사업장 수정",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SportalSuperAdminApi_Comm_Dto_Site_Request_UpdateSiteDto" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/RemoveSite": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "사업장 삭제",
+        "parameters": [
+          { "name": "siteKey", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/GetSiteMasterList": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "사업장 관리자 조회",
+        "parameters": [
+          { "name": "pageNumber", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "pageSize", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "siteKey", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "searchKey", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/RemoveSiteMaster": {
+      "delete": {
+        "tags": ["Site"],
+        "summary": "사업장 관리자 삭제",
+        "parameters": [
+          { "name": "adminSeq", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SuperSite/W/sign/GetChargeHistory": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "크레딧 충전이력 조회",
+        "parameters": [
+          { "name": "pageNumber", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "pageSize", "in": "query", "required": true, "schema": { "type": "integer", "format": "int32" } },
+          { "name": "searchKey", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SportalSuperAdminApi_Comm_Dto_Login_Request_LoginDto": {
+        "required": ["loginId", "loginPw"],
+        "type": "object",
+        "properties": {
+          "loginId": { "minLength": 1, "type": "string" },
+          "loginPw": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Login_Request_RefreshTokenDto": {
+        "required": ["refreshToken"],
+        "type": "object",
+        "properties": {
+          "refreshToken": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Register_Master_Request_AddMainMasterDto": {
+        "required": ["deptName", "job", "licenseKey", "loginId", "loginPw", "name", "role"],
+        "type": "object",
+        "properties": {
+          "loginId": { "minLength": 1, "type": "string" },
+          "loginPw": { "minLength": 1, "type": "string" },
+          "name": { "minLength": 1, "type": "string" },
+          "company": { "type": "string", "nullable": true },
+          "deptName": { "minLength": 1, "type": "string" },
+          "job": { "minLength": 1, "type": "string" },
+          "role": { "type": "integer", "format": "int32" },
+          "licenseKey": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Register_Master_Request_ExistsMainMasterLoginIdDto": {
+        "required": ["loginId"],
+        "type": "object",
+        "properties": {
+          "loginId": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Register_Master_Request_SendMainMasterInviteDto": {
+        "required": ["licenseKey", "receiver"],
+        "type": "object",
+        "properties": {
+          "licenseKey": { "minLength": 1, "type": "string" },
+          "receiver": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Register_SuperMaster_Request_AddSuperMasterDto": {
+        "required": ["deptName", "job", "loginId", "loginPw", "name"],
+        "type": "object",
+        "properties": {
+          "loginId": { "minLength": 1, "type": "string" },
+          "loginPw": { "minLength": 8, "type": "string" },
+          "name": { "minLength": 1, "type": "string" },
+          "deptName": { "minLength": 1, "type": "string" },
+          "job": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Register_SuperMaster_Request_ExistsSuperMasterLoginIdDto": {
+        "required": ["loginId"],
+        "type": "object",
+        "properties": {
+          "loginId": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Register_SuperMaster_Request_SendSuperMasterInviteDto": {
+        "type": "object",
+        "properties": {
+          "receiver": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Site_Request_AddCreditIssueDto": {
+        "required": ["creditCount", "siteKey"],
+        "type": "object",
+        "properties": {
+          "siteKey": { "minLength": 1, "type": "string" },
+          "creditCount": { "type": "integer", "format": "int32" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Site_Request_AddSiteDto": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "nullable": true },
+          "creditCount": { "type": "integer", "format": "int32" },
+          "autoIssue": { "type": "boolean" },
+          "viewNameYn": { "type": "boolean" },
+          "viewDeptYn": { "type": "boolean" },
+          "viewJobYn": { "type": "boolean" },
+          "viewCompanyYn": { "type": "boolean" },
+          "viewSabunYn": { "type": "boolean" },
+          "viewEndYn": { "type": "boolean" },
+          "qrTimeOut": { "type": "integer", "format": "int32" },
+          "sendEmail": { "type": "string", "nullable": true },
+          "syncUrl": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "SportalSuperAdminApi_Comm_Dto_Site_Request_UpdateSiteDto": {
+        "required": ["siteKey"],
+        "type": "object",
+        "properties": {
+          "siteKey": { "minLength": 1, "type": "string" },
+          "name": { "type": "string", "nullable": true },
+          "autoIssue": { "type": "boolean", "nullable": true },
+          "viewNameYn": { "type": "boolean", "nullable": true },
+          "viewDeptYn": { "type": "boolean", "nullable": true },
+          "viewJobYn": { "type": "boolean", "nullable": true },
+          "viewCompanyYn": { "type": "boolean", "nullable": true },
+          "viewSabunYn": { "type": "boolean", "nullable": true },
+          "viewEndDtYn": { "type": "boolean", "nullable": true },
+          "qrTimeOut": { "type": "integer", "format": "int32", "nullable": true },
+          "syncUrl": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "입력양식 - 'Bearer' [space] and then your token.\r\n                예: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [{ "Bearer": [] }],
+  "tags": [
+    { "name": "Login" },
+    { "name": "Register" },
+    { "name": "Site" }
+  ]
+}

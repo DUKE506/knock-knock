@@ -88,7 +88,53 @@
 
 ---
 
-## Phase 4: 관리자 역할 위임
+## Phase 4: 슈퍼관리자 백엔드 API 교체
+
+> 참고 문서: [docs/super-admin-api.json](docs/super-admin-api.json)
+> 각 Task는 순서대로 진행 (4-B 완료 후 4-C 시작 — siteKey 의존성)
+
+### Task 4-A: API 클라이언트 기반 구축 + 로그인 교체
+
+- [ ] `.env.local` — `NEXT_PUBLIC_API_URL` 추가
+- [ ] `src/lib/apiClient.ts` — fetch 싱글톤 신규 생성
+  - [ ] `baseURL` 자동 적용
+  - [ ] `useAuthStore`에서 `accessToken` 읽어 `Authorization: Bearer {token}` 자동 첨부
+  - [ ] `get()`, `post()`, `patch()`, `delete()` 메서드
+- [ ] `src/store/useAuthStore.ts` — `accessToken`, `refreshToken` 필드 추가
+- [ ] `src/store/useAuthStore.ts` — `setTokens()` 액션 추가
+- [ ] `src/lib/api/admin/admin.ts` — `loginAdmin()` → `POST /api/v1/SuperLogin/W/Login` 교체
+- [ ] `src/app/login/page.tsx` — 로그인 성공 후 `setTokens()` 호출로 토큰 저장
+
+### Task 4-B: 고객사 관리 API 교체 (`/admin/clients`)
+
+> ⚠️ 진행 전 `POST /api/v1/SuperSite/W/sign/AddSite` 응답에서 `siteKey` 포함 여부 Try it out으로 확인 필요
+
+- [ ] `src/lib/api/workplace.ts` — `fetchWorkplaces()` → `GET /api/v1/SuperSite/W/sign/GetSiteList` 교체 + 응답 매핑
+- [ ] `src/lib/api/workplace.ts` — `createWorkplace()` → `POST /api/v1/SuperSite/W/sign/AddSite` 교체
+  - [ ] UI 입력(`name`, `creditCount`, `sendEmail`)만 사용, 나머지 `AddSiteDto` 필드는 기본값으로 처리
+  - [ ] 로컬 `generateIssueCode()` 호출 제거
+- [ ] `src/components/admin/workplaces/CreateWorkplaceModal.tsx` — 서버 응답 기반 onSubmit 수정 (issueCode 로컬 생성 로직 제거)
+
+### Task 4-C: 크레딧 관리 API 교체 (`/admin/credits`)
+
+- [ ] `src/lib/api/credit.ts` — `fetchCreditHistory()` → `GET /api/v1/SuperSite/W/sign/GetChargeHistory` 교체 + 응답 매핑
+- [ ] `src/lib/api/credit.ts` — `chargeCreditsToWorkplace()` → `POST /api/v1/SuperSite/W/sign/AddCreditIssue` 교체
+  - [ ] 기존 workplaces + credit_history 직접 업데이트 로직 제거
+  - [ ] `{ siteKey, creditCount }` 만 전송하는 방식으로 단순화
+- [ ] `src/components/admin/credits/ChargeCreditModal.tsx` — `workplaceId` → `siteKey` 기반으로 변경
+
+### Task 4-D: 슈퍼관리자 관리 API 교체 (`/admin/users`)
+
+- [ ] `src/lib/api/admin/admin.ts` — `fetchAdmins()` → `GET /api/v1/SuperRegister/W/sign/GetSuperMasterList` 교체 + 응답 매핑
+- [ ] `src/lib/api/admin/admin.ts` — `sendInviteMail()` → `POST /api/v1/SuperRegister/W/sign/InviteSuperMaster` 교체
+  - [ ] 로컬 JWT 토큰 생성 로직 제거, `{ receiver }` 만 전송
+- [ ] `src/lib/api/admin/admin.ts` — `createAdmin()` → `POST /api/v1/SuperRegister/W/AddSuperMaster` 교체
+- [ ] `src/app/auth/invite/page.tsx` — Zod 스키마에 `loginId`, `deptName`, `job` 필드 추가
+- [ ] `src/app/auth/invite/page.tsx` — 폼에 `loginId`(아이디), `deptName`(부서), `job`(직책) 입력 필드 추가
+
+---
+
+## Phase 5: 관리자 역할 위임 (보류)
 
 ### Task 4-A: 주관리자/부관리자 기능
 
@@ -104,9 +150,9 @@
 
 ---
 
-## Phase 5: API 정리
+## Phase 6: API 정리 (보류)
 
-### Task 5-A: 백엔드 교체 대비 API 정리
+### Task 6-A: 백엔드 교체 대비 API 정리
 
 - [ ] `src/lib/api/credit.ts` — 미사용 함수 정리 (`createCreditRequest`, `redeemCreditCode`, `approveCreditRequest`, `rejectCreditRequest`)
 - [ ] `src/lib/api/cardRequest.ts` — 반환 타입 `{ data, error }` 패턴 통일 확인
