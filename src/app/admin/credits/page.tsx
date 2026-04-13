@@ -62,6 +62,7 @@ export default function AdminCreditsPage() {
       <ChargeCreditModal
         isOpen={isChargeModalOpen}
         onClose={() => setIsChargeModalOpen(false)}
+        onSuccess={() => fetchCredits(params)}
       />
     </div>
   );

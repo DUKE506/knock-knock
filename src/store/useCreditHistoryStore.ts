@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { CreditHistory } from "@/lib/api/credit";
-import { fetchCreditHistory } from "@/lib/api/credit";
+import { fetchChargeHistory } from "@/lib/api/credit";
 import { PagedRequest } from "@/types/pagination";
 import { PaginationMeta } from "@/types/response";
 
@@ -19,15 +19,7 @@ interface CreditHistoryStore {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 
-  // Supabase 동기화
-  fetchCredits: (
-    params: PagedRequest,
-    filters?: {
-      type?: "issued" | "requested";
-      status?: "pending" | "approved" | "rejected";
-      workplaceId?: string;
-    },
-  ) => Promise<void>;
+  fetchCredits: (params: PagedRequest) => Promise<void>;
 }
 
 export const useCreditHistoryStore = create<CreditHistoryStore>()(
@@ -68,11 +60,10 @@ export const useCreditHistoryStore = create<CreditHistoryStore>()(
 
       setError: (error) => set({ error }),
 
-      // Supabase에서 데이터 가져오기
-      fetchCredits: async (params, filters) => {
+      fetchCredits: async (params) => {
         set({ isLoading: true, error: null });
         try {
-          const result = await fetchCreditHistory(params, filters);
+          const result = await fetchChargeHistory(params);
           if (result.error || !result.data) {
             set({
               error: "크레딧 이력을 불러오는데 실패했습니다.",

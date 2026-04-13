@@ -4,9 +4,6 @@ import Input from "@/components/common/Input";
 import Select from "@/components/common/Select";
 import BaseModal from "@/components/common/modal/BaseModal";
 import { chargeCreditsToWorkplace } from "@/lib/api/credit";
-import type { CreditHistory } from "@/lib/api/credit";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useCreditHistoryStore } from "@/store/useCreditHistoryStore";
 import { useWorkplaceStore } from "@/store/useWorkplaceStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
@@ -16,6 +13,7 @@ import z from "zod";
 interface ChargeCreditModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 const chargeCreditSchema = z.object({
@@ -28,10 +26,9 @@ type ChargeCreditFormData = z.infer<typeof chargeCreditSchema>;
 export default function ChargeCreditModal({
   isOpen,
   onClose,
+  onSuccess,
 }: ChargeCreditModalProps) {
   const { workplaces } = useWorkplaceStore();
-  const { addCreditHistory } = useCreditHistoryStore();
-  const { user } = useAuthStore();
 
   const {
     register,
@@ -50,21 +47,19 @@ export default function ChargeCreditModal({
       return;
     }
 
-    const { data: history, error } = await chargeCreditsToWorkplace({
-      workplaceId: data.workplaceId,
-      workplaceName: workplace.name,
-      amount: data.amount,
-      createdBy: user?.name ?? "슈퍼관리자",
+    const { success, error } = await chargeCreditsToWorkplace({
+      siteKey: data.workplaceId,
+      creditCount: data.amount,
     });
 
-    if (error || !history) {
+    if (!success || error) {
       toast.error("크레딧 충전에 실패했습니다.");
       return;
     }
 
-    addCreditHistory(history as unknown as CreditHistory);
     toast.success(`${workplace.name}에 ${data.amount} 크레딧을 충전했습니다.`);
     handleClose();
+    onSuccess?.();
   };
 
   const handleClose = () => {

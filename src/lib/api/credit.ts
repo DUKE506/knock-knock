@@ -1,6 +1,8 @@
 import { PagedRequest } from "@/types/pagination";
+import { PagedData } from "@/types/response";
 import { supabase } from "../supabase";
 import { generateIssueCode } from "@/lib/utils/generateIssueCode";
+import { apiClient } from "../apiClient";
 
 // ============================================
 // 크레딧 관련 API
@@ -293,58 +295,67 @@ export async function redeemCreditCode(code: string, workplaceId: string) {
   return { success: true, amount: creditHistory.amount, error: null };
 }
 
+interface ChargeHistoryItem {
+  creditSeq: string;
+  siteKey: string;
+  siteName: string;
+  creditCount: number;
+  producer: string;
+  createDt: string;
+}
+
 /**
- * 크레딧 직접 충전 (슈퍼관리자 → 사업장)
+ * 크레딧 충전 이력 조회 (슈퍼관리자 전체, 백엔드 API)
+ */
+export async function fetchChargeHistory(params: PagedRequest) {
+  const query = new URLSearchParams({
+    pageNumber: String(params.pageNumber),
+    pageSize: String(params.pageSize),
+  });
+  if (params.search) query.set("searchKey", params.search);
+
+  const { data, error } = await apiClient.get<PagedData<ChargeHistoryItem>>(
+    `/api/v1/SuperSite/W/sign/GetChargeHistory?${query.toString()}`,
+  );
+
+  if (error || !data) {
+    return { data: null, error };
+  }
+
+  const creditHistory: CreditHistory[] = data.data.map((item) => ({
+    id: item.creditSeq,
+    type: "charged" as const,
+    workplaceId: item.siteKey,
+    workplaceName: item.siteName,
+    amount: item.creditCount,
+    createdBy: item.producer,
+    createdAt: new Date(item.createDt).toLocaleString("ko-KR"),
+  }));
+
+  return {
+    data: {
+      meta: data.meta,
+      data: creditHistory,
+    },
+    error: null,
+  };
+}
+
+/**
+ * 크레딧 직접 충전 (슈퍼관리자 → 사업장, 백엔드 API)
  */
 export async function chargeCreditsToWorkplace(data: {
-  workplaceId: string;
-  workplaceName: string;
-  amount: number;
-  createdBy: string;
+  siteKey: string;
+  creditCount: number;
 }) {
-  // 1. 현재 크레딧 조회
-  const { data: workplace, error: fetchError } = await supabase
-    .from("workplaces")
-    .select("credit_remaining, credit_total")
-    .eq("id", data.workplaceId)
-    .single();
+  const { error } = await apiClient.post<boolean>(
+    "/api/v1/SuperSite/W/sign/AddCreditIssue",
+    { siteKey: data.siteKey, creditCount: data.creditCount },
+  );
 
-  if (fetchError || !workplace) {
-    console.error("사업장 조회 실패:", fetchError);
-    return { data: null, error: fetchError ?? new Error("사업장 정보를 찾을 수 없습니다.") };
+  if (error) {
+    return { success: false, error };
   }
 
-  // 2. 크레딧 업데이트
-  const { error: updateError } = await supabase
-    .from("workplaces")
-    .update({
-      credit_remaining: workplace.credit_remaining + data.amount,
-      credit_total: workplace.credit_total + data.amount,
-    })
-    .eq("id", data.workplaceId);
-
-  if (updateError) {
-    console.error("크레딧 충전 실패:", updateError);
-    return { data: null, error: updateError };
-  }
-
-  // 3. 충전 이력 삽입
-  const { data: history, error: historyError } = await supabase
-    .from("credit_history")
-    .insert({
-      type: "charged",
-      amount: data.amount,
-      workplace_id: data.workplaceId,
-      workplace_name: data.workplaceName,
-      created_by: data.createdBy,
-    })
-    .select()
-    .single();
-
-  if (historyError) {
-    console.error("크레딧 이력 삽입 실패:", historyError);
-    return { data: null, error: historyError };
-  }
-
-  return { data: history, error: null };
+  return { success: true, error: null };
 }

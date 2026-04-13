@@ -120,11 +120,12 @@
 
 ### Task 4-C: 크레딧 관리 API 교체 (`/admin/credits`)
 
-- [ ] `src/lib/api/credit.ts` — `fetchCreditHistory()` → `GET /api/v1/SuperSite/W/sign/GetChargeHistory` 교체 + 응답 매핑
-- [ ] `src/lib/api/credit.ts` — `chargeCreditsToWorkplace()` → `POST /api/v1/SuperSite/W/sign/AddCreditIssue` 교체
-  - [ ] 기존 workplaces + credit_history 직접 업데이트 로직 제거
-  - [ ] `{ siteKey, creditCount }` 만 전송하는 방식으로 단순화
-- [ ] `src/components/admin/credits/ChargeCreditModal.tsx` — `workplaceId` → `siteKey` 기반으로 변경
+- [x] `src/lib/api/credit.ts` — `fetchChargeHistory()` 신규 추가 → `GET /api/v1/SuperSite/W/sign/GetChargeHistory` + 응답 매핑 (`fetchCreditHistory`는 manager용으로 유지)
+- [x] `src/lib/api/credit.ts` — `chargeCreditsToWorkplace()` → `POST /api/v1/SuperSite/W/sign/AddCreditIssue` 교체
+  - [x] 기존 workplaces + credit_history 직접 업데이트 로직 제거
+  - [x] `{ siteKey, creditCount }` 만 전송하는 방식으로 단순화
+- [x] `src/components/admin/credits/ChargeCreditModal.tsx` — `siteKey` 기반으로 변경, 충전 후 `onSuccess` 콜백으로 목록 갱신
+- [x] `src/components/common/Select.tsx` — 드롭다운 Portal 렌더링으로 교체 (모달 내 overflow 클리핑 문제 해결)
 
 ### Task 4-D: 슈퍼관리자 관리 API 교체 (`/admin/users`)
 
