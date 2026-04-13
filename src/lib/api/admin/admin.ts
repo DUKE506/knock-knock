@@ -7,6 +7,7 @@ import { sendAdminInvite } from "../mail";
 import { supabase } from "@/lib/supabase";
 import { PagedRequest } from "@/types/pagination";
 import { Admin } from "@/app/admin/users/colums";
+import { apiClient } from "@/lib/apiClient";
 
 export interface User {}
 
@@ -115,21 +116,52 @@ export async function fetchAdmins(params: PagedRequest) {
 /**
  * 슈퍼관리자 로그인
  */
-export async function loginAdmin(data: { email: string; password: string }) {
-  const {
-    data: { password, ...rest },
-    error,
-  } = await supabase
-    .from("users")
-    .select("*")
-    .eq("email", data.email)
-    .eq("password", data.password) // 임시
-    .single();
+export async function loginAdmin(data: {
+  email: string;
+  password: string;
+}): Promise<{
+  data: { accessToken: string; refreshToken: string } | null;
+  error: unknown;
+}> {
+  const { data: tokens, error } = await apiClient.post<{
+    accessToken: string;
+    refreshToken: string;
+  }>("/api/v1/SuperLogin/W/Login", {
+    loginId: data.email,
+    loginPw: data.password,
+  });
 
-  if (error) {
-    console.error("슈퍼관리자 로그인 실패");
+  if (error || !tokens) {
+    console.error("슈퍼관리자 로그인 실패:", error);
     return { data: null, error };
   }
 
-  return { data: rest, error: null };
+  return { data: tokens, error: null };
+}
+
+/**
+ * 슈퍼관리자 프로필 조회
+ */
+export interface AdminProfile {
+  adminSeq: string;
+  loginId: string;
+  name: string;
+  deptName: string;
+  job: string;
+}
+
+export async function fetchAdminProfile(): Promise<{
+  data: AdminProfile | null;
+  error: unknown;
+}> {
+  const { data, error } = await apiClient.get<AdminProfile>(
+    "/api/v1/SuperLogin/W/sign/MyProfile",
+  );
+
+  if (error || !data) {
+    console.error("슈퍼관리자 프로필 조회 실패:", error);
+    return { data: null, error };
+  }
+
+  return { data, error: null };
 }

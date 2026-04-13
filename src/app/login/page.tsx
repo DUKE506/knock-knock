@@ -11,7 +11,7 @@ import Link from "next/link";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import { loginUser } from "@/lib/api/user";
-import { loginAdmin } from "@/lib/api/admin/admin";
+import { loginAdmin, fetchAdminProfile } from "@/lib/api/admin/admin";
 import { AuthUser, useAuthStore } from "@/store/useAuthStore";
 
 // 로그인 폼 스키마
@@ -25,7 +25,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const [loginType, setLoginType] = useState<"admin" | "client">("client");
-  const { setUser } = useAuthStore();
+  const { setUser, setTokens } = useAuthStore();
 
   const {
     register,
@@ -41,24 +41,31 @@ export default function LoginPage() {
     if (loginType === "admin") {
       //슈퍼관리자
       try {
-        const { data: admin, error } = await loginAdmin(data);
+        const { data: tokens, error } = await loginAdmin(data);
 
-        if (error || !admin) {
+        if (error || !tokens) {
           toast.error("이메일 또는 비밀번호가 일치하지 않습니다.");
           return;
         }
 
-        //공통 AuthUser 타입 변환
+        setTokens(tokens.accessToken, tokens.refreshToken);
+
+        const { data: profile, error: profileError } = await fetchAdminProfile();
+        if (profileError || !profile) {
+          toast.error("사용자 정보 조회에 실패했습니다.");
+          return;
+        }
+
         const authUser: AuthUser = {
-          id: admin.id,
-          name: admin.name,
-          phone: admin.phone,
-          email: admin.email,
+          id: profile.adminSeq,
+          name: profile.name,
+          email: profile.loginId,
           isAdmin: true,
           role: "슈퍼관리자",
+          deptName: profile.deptName,
+          job: profile.job,
         };
         setUser(authUser);
-        // localStorage.setItem("admin", JSON.stringify(admin));
         toast.success("로그인 성공!");
         router.push("/admin/clients");
       } catch (err) {

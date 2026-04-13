@@ -95,15 +95,18 @@
 
 ### Task 4-A: API 클라이언트 기반 구축 + 로그인 교체
 
-- [ ] `.env.local` — `NEXT_PUBLIC_API_URL` 추가
-- [ ] `src/lib/apiClient.ts` — fetch 싱글톤 신규 생성
-  - [ ] `baseURL` 자동 적용
-  - [ ] `useAuthStore`에서 `accessToken` 읽어 `Authorization: Bearer {token}` 자동 첨부
-  - [ ] `get()`, `post()`, `patch()`, `delete()` 메서드
-- [ ] `src/store/useAuthStore.ts` — `accessToken`, `refreshToken` 필드 추가
-- [ ] `src/store/useAuthStore.ts` — `setTokens()` 액션 추가
-- [ ] `src/lib/api/admin/admin.ts` — `loginAdmin()` → `POST /api/v1/SuperLogin/W/Login` 교체
-- [ ] `src/app/login/page.tsx` — 로그인 성공 후 `setTokens()` 호출로 토큰 저장
+- [x] `.env.local` — `NEXT_PUBLIC_API_URL` 추가
+- [x] `next.config.ts` — `/api/v1/**` rewrites 프록시 추가 (CORS 해결)
+- [x] `src/lib/apiClient.ts` — fetch 싱글톤 신규 생성
+  - [x] `useAuthStore`에서 `accessToken` 읽어 `Authorization: Bearer {token}` 자동 첨부
+  - [x] `get()`, `post()`, `patch()`, `delete()` 메서드
+- [x] `src/store/useAuthStore.ts` — `accessToken`, `refreshToken` 필드 추가
+- [x] `src/store/useAuthStore.ts` — `setTokens()` 액션 추가
+- [x] `src/store/useAuthStore.ts` — `AuthUser`에 `deptName`, `job` 추가, `phone` nullable 처리
+- [x] `src/lib/api/admin/admin.ts` — `loginAdmin()` → `POST /api/v1/SuperLogin/W/Login` 교체
+- [x] `src/lib/api/admin/admin.ts` — `fetchAdminProfile()` 추가 (`GET /api/v1/SuperLogin/W/sign/MyProfile`)
+- [x] `src/app/login/page.tsx` — 로그인 성공 후 `setTokens()` 호출로 토큰 저장
+- [x] `src/app/login/page.tsx` — 로그인 성공 후 `fetchAdminProfile()` 호출로 사용자 정보 바인딩
 
 ### Task 4-B: 고객사 관리 API 교체 (`/admin/clients`)
 
