@@ -1,7 +1,16 @@
-import { ApiListResponse } from "@/types/response";
-import { supabase } from "../supabase";
+import { PagedData } from "@/types/response";
+import { apiClient } from "../apiClient";
 import { Workplace } from "@/types/workplace";
 import { PagedRequest } from "@/types/pagination";
+
+interface SiteListItem {
+  siteKey: string;
+  siteName: string;
+  creditCount: number;
+  creditUsed: number;
+  licenseKey: string;
+  createDt: string;
+}
 
 // ============================================
 // 사업장 관련 API
@@ -11,59 +20,33 @@ import { PagedRequest } from "@/types/pagination";
  * 사업장 전체 조회
  */
 export async function fetchWorkplaces(params: PagedRequest) {
-  const from = (params.pageNumber - 1) * params.pageSize;
-  const to = from + params.pageSize - 1;
+  const query = new URLSearchParams({
+    pageNumber: String(params.pageNumber),
+    pageSize: String(params.pageSize),
+  });
+  if (params.search) query.set("searchKey", params.search);
 
-  let query = supabase
-    .from("workplaces")
-    .select("*", { count: "exact" })
-    .order("created_at", { ascending: false });
+  const { data, error } = await apiClient.get<PagedData<SiteListItem>>(
+    `/api/v1/SuperSite/W/sign/GetSiteList?${query.toString()}`,
+  );
 
-  //검색어 필터
-  if (params.search) {
-    query = query.or(`name.like.%${params.search}`);
-  }
-  //정렬(옵션)
-  if (params.sortBy) {
-    query = query.order(params.sortBy, {
-      ascending: params.sortOrder === "asc",
-    });
-  }
-  // 페이지네이션 적용
-  query = query.range(from, to);
-
-  const { data, error, count } = await query;
-
-  if (error) {
-    console.error("사업장 조회 실패:", error);
-    return { workplaces: [], error };
+  if (error || !data) {
+    return { data: null, error };
   }
 
-  // Supabase 형식 → 프론트엔드 형식 변환
-  const workplaces: Workplace[] = data.map((row) => ({
-    id: row.id,
-    name: row.name,
-    issueCode: row.issue_code,
-    status: row.status as "active" | "pending" | "inactive",
-    creditRemaining: row.credit_remaining,
-    creditTotal: row.credit_total,
-    cardCount: row.card_count,
-    createdAt: new Date(row.created_at)
-      .toISOString()
-      .split("T")[0]
-      .replace(/-/g, "."),
-    managerEmail: row.manager_email,
+  const workplaces: Workplace[] = data.data.map((item) => ({
+    id: item.siteKey,
+    name: item.siteName,
+    issueCode: item.licenseKey,
+    creditTotal: item.creditCount,
+    creditRemaining: item.creditCount - item.creditUsed,
+    createdAt: item.createDt.split("T")[0].replace(/-/g, "."),
   }));
 
   return {
     data: {
-      meta: {
-        pageNumber: params.pageNumber,
-        pageSize: params.pageSize,
-        totalCount: count || 0,
-        totalPages: Math.ceil((count || 0) / params.pageSize),
-      },
-      data: workplaces || [],
+      meta: data.meta,
+      data: workplaces,
     },
     error: null,
   };
@@ -74,30 +57,31 @@ export async function fetchWorkplaces(params: PagedRequest) {
  */
 export async function createWorkplace(data: {
   name: string;
-  issueCode: string;
-  creditTotal: number;
-  managerEmail?: string;
+  creditCount: number;
+  sendEmail?: string;
 }) {
-  const { data: workplace, error } = await supabase
-    .from("workplaces")
-    .insert({
+  const { data: result, error } = await apiClient.post<boolean>(
+    "/api/v1/SuperSite/W/sign/AddSite",
+    {
       name: data.name,
-      issue_code: data.issueCode,
-      status: "pending",
-      credit_remaining: data.creditTotal,
-      credit_total: data.creditTotal,
-      card_count: 0,
-      manager_email: data.managerEmail,
-    })
-    .select()
-    .single();
+      creditCount: data.creditCount,
+      sendEmail: data.sendEmail ?? null,
+      autoIssue: false,
+      viewNameYn: false,
+      viewDeptYn: false,
+      viewJobYn: false,
+      viewCompanyYn: false,
+      viewSabunYn: false,
+      viewEndYn: false,
+      qrTimeOut: 0,
+    },
+  );
 
   if (error) {
-    console.error("사업장 생성 실패:", error);
-    return { workplace: null, error };
+    return { success: false, error };
   }
 
-  return { workplace, error: null };
+  return { success: true, error: null };
 }
 
 /**
@@ -170,15 +154,12 @@ export async function fetchWorkplaceById(id: string) {
     id: data.id,
     name: data.name,
     issueCode: data.issue_code,
-    status: data.status as "active" | "pending" | "inactive",
     creditRemaining: data.credit_remaining,
     creditTotal: data.credit_total,
-    cardCount: data.card_count,
     createdAt: new Date(data.created_at)
       .toISOString()
       .split("T")[0]
       .replace(/-/g, "."),
-    managerEmail: data.manager_email,
   };
 
   return { workplace, error: null };

@@ -21,48 +21,6 @@ export const workplaceColumns: ColumnDef<Workplace>[] = [
     ),
   },
   {
-    accessorKey: "status",
-    header: "상태",
-    cell: ({ row }) => {
-      const statusConfig = {
-        active: {
-          label: "운영중",
-          color: "green",
-          bgColor: "bg-green-dim",
-          textColor: "text-green",
-          dotColor: "bg-green",
-        },
-        pending: {
-          label: "대기중",
-          color: "amber",
-          bgColor: "bg-amber-dim",
-          textColor: "text-amber",
-          dotColor: "bg-amber",
-        },
-        inactive: {
-          label: "비활성",
-          color: "gray",
-          bgColor: "bg-gray-200",
-          textColor: "text-text-3",
-          dotColor: "bg-text-3",
-        },
-      };
-
-      const config = statusConfig[row.original.status];
-
-      return (
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded ${config.bgColor} ${config.textColor} text-[11px] font-medium font-mono`}
-        >
-          <span
-            className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`}
-          ></span>
-          {config.label}
-        </span>
-      );
-    },
-  },
-  {
     accessorKey: "credit",
     header: "크레딧",
     cell: ({ row }) => {
@@ -89,15 +47,6 @@ export const workplaceColumns: ColumnDef<Workplace>[] = [
         </div>
       );
     },
-  },
-  {
-    accessorKey: "cardCount",
-    header: "카드수",
-    cell: ({ row }) => (
-      <span className="font-mono text-xs text-text-2">
-        {row.original.cardCount}
-      </span>
-    ),
   },
   {
     accessorKey: "createdAt",

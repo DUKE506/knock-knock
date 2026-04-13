@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { toast } from "sonner";
 import BaseModal from "@/components/common/modal/BaseModal";
-import { generateIssueCode } from "@/lib/utils/generateIssueCode";
-import { sendIssueCodeEmail } from "@/lib/api/mail";
 import { createWorkplace } from "@/lib/api/workplace";
 import { useWorkplaceStore } from "@/store/useWorkplaceStore";
-import { Workplace } from "@/types/workplace";
 import { useForm } from "react-hook-form";
 import Input from "@/components/common/Input";
 import { z } from "zod";
@@ -45,81 +41,24 @@ export default function CreateWorkplaceModal({
     resolver: zodResolver(createWorkplaceSchema),
   });
 
-  const addWorkplace = useWorkplaceStore((state) => state.addWorkplace);
+  const fetchWorkplaces = useWorkplaceStore((state) => state.fetchWorkplaces);
 
   const onSubmit = async (data: CreateWorkplaceFormData) => {
-    console.log(data);
-
     try {
-      // 1-1. 라이센스코드 생성
-      const issueCode = generateIssueCode();
-      // 1-2. 초대코드 생성
-      const inviteCode = generateIssueCode();
-
-      // 2. Supabase에 저장
-      const { workplace, error } = await createWorkplace({
+      const { success, error } = await createWorkplace({
         name: data.name,
-        issueCode,
-        inviteCode,
-        creditTotal: data.initialCredit,
-        managerEmail: data.managerEmail,
+        creditCount: data.initialCredit,
+        sendEmail: data.managerEmail,
       });
 
-      if (error) {
+      if (error || !success) {
         toast.error("사업장 생성에 실패했습니다.");
-        console.error(error);
         return;
       }
 
-      // 3. Zustand 스토어에 추가 (프론트 형식으로 변환)
-      const newWorkplace: Workplace = {
-        id: workplace.id,
-        name: workplace.name,
-        issueCode: workplace.issue_code,
-        status: workplace.status as "active" | "pending" | "inactive",
-        creditRemaining: workplace.credit_remaining,
-        creditTotal: workplace.credit_total,
-        cardCount: workplace.card_count,
-        createdAt: new Date(workplace.created_at)
-          .toISOString()
-          .split("T")[0]
-          .replace(/-/g, "."),
-        managerEmail: workplace.manager_email,
-      };
-
-      addWorkplace(newWorkplace);
-
-      // 4. 이메일 전송 (선택사항)
-      if (data.managerEmail && data.managerEmail.trim()) {
-        const mailResult = await sendIssueCodeEmail(
-          data.managerEmail,
-          data.name,
-          issueCode,
-          data.initialCredit,
-        );
-
-        if (!mailResult.success) {
-          console.error("이메일 전송 실패:", mailResult.error);
-          toast.warning("사업장은 생성되었지만 이메일 전송에 실패했습니다.", {
-            description: `발급코드: ${issueCode}`,
-          });
-        } else {
-          toast.success(
-            "사업장이 생성되고 발급코드가 이메일로 전송되었습니다!",
-            {
-              description: `발급코드: ${issueCode}`,
-            },
-          );
-        }
-      } else {
-        toast.success("사업장이 생성되었습니다!", {
-          description: `발급코드: ${issueCode}`,
-        });
-      }
-
-      // 5. 폼 초기화 및 모달 닫기
+      await fetchWorkplaces({ pageNumber: 1, pageSize: 20 });
+      toast.success("사업장이 생성되었습니다.");
       reset();
-      // setErrors({});
       onClose();
     } catch (error) {
       console.error("사업장 생성 실패:", error);
@@ -184,9 +123,7 @@ export default function CreateWorkplaceModal({
         {/* 안내 메시지 */}
         <div className="bg-accent-dim border border-accent/20 rounded-radius-md px-4 py-3">
           <p className="text-xs text-accent leading-relaxed">
-            💡 고객사 생성 시 16자리 발급코드가 자동으로 생성 및 발급됩니다.
-            <br />
-            (형식: XXXX-XXXX-XXXX-XXXX)
+            💡 고객사 생성 시 라이센스 코드가 자동 발급되며, 관리자 이메일로 전송됩니다.
           </p>
         </div>
       </div>

@@ -110,13 +110,13 @@
 
 ### Task 4-B: 고객사 관리 API 교체 (`/admin/clients`)
 
-> ⚠️ 진행 전 `POST /api/v1/SuperSite/W/sign/AddSite` 응답에서 `siteKey` 포함 여부 Try it out으로 확인 필요
-
-- [ ] `src/lib/api/workplace.ts` — `fetchWorkplaces()` → `GET /api/v1/SuperSite/W/sign/GetSiteList` 교체 + 응답 매핑
-- [ ] `src/lib/api/workplace.ts` — `createWorkplace()` → `POST /api/v1/SuperSite/W/sign/AddSite` 교체
-  - [ ] UI 입력(`name`, `creditCount`, `sendEmail`)만 사용, 나머지 `AddSiteDto` 필드는 기본값으로 처리
-  - [ ] 로컬 `generateIssueCode()` 호출 제거
-- [ ] `src/components/admin/workplaces/CreateWorkplaceModal.tsx` — 서버 응답 기반 onSubmit 수정 (issueCode 로컬 생성 로직 제거)
+- [x] `src/lib/api/workplace.ts` — `fetchWorkplaces()` → `GET /api/v1/SuperSite/W/sign/GetSiteList` 교체 + 응답 매핑
+- [x] `src/lib/api/workplace.ts` — `createWorkplace()` → `POST /api/v1/SuperSite/W/sign/AddSite` 교체
+  - [x] UI 입력(`name`, `creditCount`, `sendEmail`)만 사용, 나머지 `AddSiteDto` 필드는 기본값으로 처리
+  - [x] 로컬 `generateIssueCode()` 호출 제거
+- [x] `src/components/admin/workplaces/CreateWorkplaceModal.tsx` — 서버 응답 기반 onSubmit 수정 (issueCode 로컬 생성 로직 제거)
+- [x] `src/types/workplace.ts` — `status`, `cardCount`, `managerEmail` 제거 (백엔드 미제공 필드)
+- [x] `src/app/admin/clients/columns.tsx` — `status`, `cardCount` 컬럼 제거
 
 ### Task 4-C: 크레딧 관리 API 교체 (`/admin/credits`)
 
