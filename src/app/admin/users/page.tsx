@@ -64,7 +64,7 @@ export default function AdminsPage() {
         <Button
           variant="primary"
           size="md"
-          title="관리자 추가"
+          title="관리자 초대"
           icon={Plus}
           onClick={() => setIsAddModalOpen(true)}
         />

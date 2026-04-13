@@ -4,6 +4,7 @@ import { sendInviteMail } from "@/lib/api/admin/admin";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import z from "zod";
 
 // 폼 스키마
@@ -35,7 +36,13 @@ const InviteUserModal = ({ isOpen, onClose }: InviteUserModalProps) => {
   };
 
   const onSubmit = async (data: InviteUserFormData) => {
-    await sendInviteMail(data);
+    const result = await sendInviteMail(data);
+    handleClose();
+    if (result.success) {
+      toast.success("초대 메일을 발송했습니다.");
+    } else {
+      toast.error("초대 메일 발송에 실패했습니다.");
+    }
   };
 
   return (

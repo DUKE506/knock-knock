@@ -36,7 +36,7 @@ export const useAdminStore = create<AdminState>()(
 
           if (result.error || !result.data) {
             set({
-              error: result.error?.message || "데이터 로딩 실패",
+              error: "데이터 로딩 실패",
               isLoading: false,
             });
             return;

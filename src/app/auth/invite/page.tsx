@@ -18,15 +18,12 @@ interface TokenPayload extends JWTPayload {
 
 const signupSchema = z
   .object({
-    name: z.string(),
-    password: z.string().min(6, "6자리 이상 입력하세요"),
+    loginId: z.string().min(1, "아이디를 입력하세요"),
+    name: z.string().min(1, "이름을 입력하세요"),
+    password: z.string().min(8, "8자리 이상 입력하세요"),
     passwordConfirm: z.string(),
-    phone: z
-      .string()
-      .regex(
-        /^010-\d{4}-\d{4}$/,
-        "전화번호 형식을 확인해주세요 (010-0000-0000)",
-      ),
+    deptName: z.string().min(1, "부서를 입력하세요"),
+    job: z.string().min(1, "직책을 입력하세요"),
   })
   .refine((data) => data.password === data.passwordConfirm, {
     message: "비밀번호가 일치하지 않습니다",
@@ -85,18 +82,15 @@ const InvitePage = () => {
   };
 
   const onSubmit = async (data: SignupFormData) => {
-    console.log(data);
     try {
       const { passwordConfirm, ...rest } = data;
-      // TODO: 회원가입 API 호출
-      const res = await createAdmin({ email, ...rest });
+      const res = await createAdmin({ ...rest, password: rest.password });
 
       if (res.error) {
-        console.log(1);
         toast.error("슈퍼관리자 생성 실패");
+        return;
       }
 
-      // 성공 시 로그인 페이지로 이동
       router.push("/auth/login");
     } catch (err) {
       console.error("회원가입 실패:", err);
@@ -171,6 +165,16 @@ const InvitePage = () => {
                 />
               </div>
 
+              {/* 아이디 */}
+              <Input
+                label="아이디"
+                placeholder="사용할 아이디 입력"
+                {...register("loginId")}
+                error={errors.loginId?.message}
+                disabled={isSubmitting}
+                required
+              />
+
               {/* 이름 */}
               <Input
                 label="이름"
@@ -185,7 +189,7 @@ const InvitePage = () => {
               <Input
                 label="비밀번호"
                 type="password"
-                placeholder="6자 이상"
+                placeholder="8자 이상"
                 {...register("password")}
                 error={errors.password?.message}
                 disabled={isSubmitting}
@@ -203,15 +207,23 @@ const InvitePage = () => {
                 required
               />
 
-              {/* 전화번호 */}
+              {/* 부서 */}
               <Input
-                label="전화번호"
-                type="tel"
-                placeholder="010-1234-5678"
-                {...register("phone")}
-                error={errors.phone?.message}
+                label="부서"
+                placeholder="개발팀"
+                {...register("deptName")}
+                error={errors.deptName?.message}
                 disabled={isSubmitting}
-                helperText="'-' 포함하여 입력해주세요"
+                required
+              />
+
+              {/* 직책 */}
+              <Input
+                label="직책"
+                placeholder="팀장"
+                {...register("job")}
+                error={errors.job?.message}
+                disabled={isSubmitting}
                 required
               />
 

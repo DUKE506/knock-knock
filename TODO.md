@@ -129,12 +129,15 @@
 
 ### Task 4-D: 슈퍼관리자 관리 API 교체 (`/admin/users`)
 
-- [ ] `src/lib/api/admin/admin.ts` — `fetchAdmins()` → `GET /api/v1/SuperRegister/W/sign/GetSuperMasterList` 교체 + 응답 매핑
-- [ ] `src/lib/api/admin/admin.ts` — `sendInviteMail()` → `POST /api/v1/SuperRegister/W/sign/InviteSuperMaster` 교체
-  - [ ] 로컬 JWT 토큰 생성 로직 제거, `{ receiver }` 만 전송
-- [ ] `src/lib/api/admin/admin.ts` — `createAdmin()` → `POST /api/v1/SuperRegister/W/AddSuperMaster` 교체
-- [ ] `src/app/auth/invite/page.tsx` — Zod 스키마에 `loginId`, `deptName`, `job` 필드 추가
-- [ ] `src/app/auth/invite/page.tsx` — 폼에 `loginId`(아이디), `deptName`(부서), `job`(직책) 입력 필드 추가
+- [x] `src/lib/api/admin/admin.ts` — `fetchAdmins()` → `GET /api/v1/SuperRegister/W/sign/GetSuperMasterList` 교체 + 응답 매핑
+- [x] `src/lib/api/admin/admin.ts` — `sendInviteMail()` → `POST /api/v1/SuperRegister/W/sign/InviteSuperMaster` 교체
+  - [x] 로컬 JWT 토큰 생성 로직 제거, `{ receiver }` 만 전송
+- [x] `src/lib/api/admin/admin.ts` — `createAdmin()` → `POST /api/v1/SuperRegister/W/AddSuperMaster` 교체
+- [x] `src/app/auth/invite/page.tsx` — Zod 스키마에 `loginId`, `deptName`, `job` 필드 추가
+- [x] `src/app/auth/invite/page.tsx` — 폼에 `loginId`(아이디), `deptName`(부서), `job`(직책) 입력 필드 추가
+- [x] `src/components/admin/users/InviteUserModal.tsx` — 초대 발송 후 모달 닫기 + 성공/실패 toast
+- [x] `src/app/admin/users/page.tsx` — "관리자 추가" → "관리자 초대" 버튼 명칭 변경
+- [x] `src/app/admin/users/colums.tsx` — `Admin` 인터페이스 및 컬럼 교체 (`email`, `phone` → `loginId`, `deptName`, `job`)
 
 ---
 

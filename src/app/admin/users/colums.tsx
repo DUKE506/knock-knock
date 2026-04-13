@@ -1,12 +1,12 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Calendar, Mail, Phone } from "lucide-react";
+import { Calendar, Mail } from "lucide-react";
 
-// 임시 더미 데이터
 export interface Admin {
   id: string;
+  loginId: string;
   name: string;
-  email: string;
-  phone: string;
+  deptName: string;
+  job: string;
   role: string;
   createdAt: string;
 }
@@ -28,23 +28,27 @@ export const columns: ColumnDef<Admin>[] = [
     ),
   },
   {
-    accessorKey: "email",
-    header: "이메일",
+    accessorKey: "loginId",
+    header: "아이디",
     cell: ({ row }) => (
       <div className="flex items-center gap-2 text-sm text-text-2">
         <Mail className="w-3.5 h-3.5" />
-        {row.original.email}
+        {row.original.loginId}
       </div>
     ),
   },
   {
-    accessorKey: "phone",
-    header: "전화번호",
+    accessorKey: "deptName",
+    header: "부서",
     cell: ({ row }) => (
-      <div className="flex items-center gap-2 text-sm text-text-2">
-        <Phone className="w-3.5 h-3.5" />
-        <span className="font-mono">{row.original.phone}</span>
-      </div>
+      <span className="text-sm text-text-2">{row.original.deptName}</span>
+    ),
+  },
+  {
+    accessorKey: "job",
+    header: "직책",
+    cell: ({ row }) => (
+      <span className="text-sm text-text-2">{row.original.job}</span>
     ),
   },
   {
