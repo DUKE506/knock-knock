@@ -35,7 +35,7 @@ export default function WorkplacesPage() {
           <Button
             variant="primary"
             icon={Plus}
-            title="사업장 생성"
+            title="고객사 생성"
             onClick={() => setIsCreateModalOpen(true)}
           />
         </div>
@@ -49,7 +49,7 @@ export default function WorkplacesPage() {
         enableFiltering={true}
         enablePagination={true}
         pageSize={10}
-        searchPlaceholder="사업장명, 코드 검색..."
+        searchPlaceholder="사업장명, 라이센스 검색..."
         emptyMessage="등록된 사업장이 없습니다."
         serverSide={{
           totalCount: meta.totalCount,
