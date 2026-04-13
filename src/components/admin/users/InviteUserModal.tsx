@@ -9,7 +9,13 @@ import z from "zod";
 
 // 폼 스키마
 const inviteUserSchema = z.object({
-  email: z.email("이메일 형식을 확인해주세요"),
+  email: z
+    .string()
+    .email("이메일 형식을 확인해주세요")
+    .refine(
+      (email) => email.endsWith("@s-tec.co.kr"),
+      "s-tec.co.kr 이메일만 초대 가능합니다",
+    ),
 });
 
 // 폼 데이터 타입

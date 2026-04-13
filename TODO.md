@@ -139,6 +139,17 @@
 - [x] `src/app/admin/users/page.tsx` — "관리자 추가" → "관리자 초대" 버튼 명칭 변경
 - [x] `src/app/admin/users/colums.tsx` — `Admin` 인터페이스 및 컬럼 교체 (`email`, `phone` → `loginId`, `deptName`, `job`)
 
+### Task 4-E: 고객사 관리자 회원가입 페이지 (`/auth/register`)
+
+- [x] `src/lib/actions/verifyInviteToken.ts` — Server Action 신규 생성 (JWT 검증, `jose` + 서버사이드 시크릿 키)
+- [x] `src/app/auth/register/page.tsx` — 인증코드 입력 step 제거, `?access={토큰}` 파라미터로 즉시 폼 진입
+- [x] `src/app/auth/register/page.tsx` — 토큰에서 `userId`(이메일/loginId), `licenseKey`, `siteName` 추출 + 고객사명 표시
+- [x] `src/app/auth/register/page.tsx` — Zod + react-hook-form 적용 (기존 수동 검증 제거)
+- [x] `src/app/auth/register/page.tsx` — 폼 필드 변경: `phone` 제거 / `deptName`, `job`, `company`(선택) 추가
+- [x] `src/lib/api/workplace.ts` — `addMainMaster()` 추가 → `POST /api/v1/SuperSite/W/AddMainMaster`
+- [x] `src/app/auth/register/page.tsx` — `createUser()` → `addMainMaster()` 교체 (`role: 0` 고정, `loginId`는 토큰 이메일 사용)
+- [x] `src/components/admin/users/InviteUserModal.tsx` — 이메일 도메인 검증 (`@s-tec.co.kr` 한정)
+
 ---
 
 ## Phase 5: 관리자 역할 위임 (보류)

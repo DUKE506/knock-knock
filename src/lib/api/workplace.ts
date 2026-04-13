@@ -85,6 +85,49 @@ export async function createWorkplace(data: {
 }
 
 /**
+ * 고객사 주관리자 회원가입
+ */
+export async function addMainMaster(data: {
+  loginId: string;
+  loginPw: string;
+  name: string;
+  deptName: string;
+  job: string;
+  company?: string | null;
+  role: number;
+  licenseKey: string;
+}) {
+  const { error } = await apiClient.post(
+    "/api/v1/SuperSite/W/AddMainMaster",
+    data,
+  );
+
+  if (error) {
+    console.error("주관리자 가입 실패:", error);
+    return { success: false, error };
+  }
+
+  return { success: true, error: null };
+}
+
+/**
+ * 메인관리자 아이디 중복 검사
+ */
+export async function checkMainMasterExists(loginId: string) {
+  const { data, error } = await apiClient.post<{ exists: boolean }>(
+    "/api/v1/SuperSite/W/ExistsMainMaster",
+    { loginId },
+  );
+
+  if (error) {
+    console.error("관리자 아이디 중복 검사 실패:", error);
+    return { exists: false, error };
+  }
+
+  return { exists: data?.exists ?? false, error: null };
+}
+
+/**
  * 발급코드로 사업장 조회 (검증용)
  */
 export async function verifyIssueCode(issueCode: string) {
