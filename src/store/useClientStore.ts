@@ -32,10 +32,7 @@ export const useClientStore = create<ClientState>()(
           const result = await fetchClientUsers(params);
 
           if (result.error || !result.data) {
-            set({
-              error: result.error?.message || "데이터 로딩 실패",
-              isLoading: false,
-            });
+            set({ error: "로딩 실패", isLoading: false });
             return;
           }
 

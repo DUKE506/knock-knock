@@ -1,27 +1,27 @@
 import Input from "@/components/common/Input";
 import BaseModal from "@/components/common/modal/BaseModal";
-import { sendInviteMail } from "@/lib/api/admin/admin";
 import { sendInviteClient } from "@/lib/api/user";
+import { useAuthStore } from "@/store/useAuthStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
 
-// 폼 스키마
 const inviteUserSchema = z.object({
   email: z.email("이메일 형식을 확인해주세요"),
 });
 
-// 폼 데이터 타입
 type InviteUserFormData = z.infer<typeof inviteUserSchema>;
 
 interface InviteUserModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const InviteUserModal = ({ isOpen, onClose }: InviteUserModalProps) => {
+const InviteUserModal = ({ isOpen, onClose, onSuccess }: InviteUserModalProps) => {
+  const { user } = useAuthStore();
   const {
     register,
     handleSubmit,
@@ -37,22 +37,24 @@ const InviteUserModal = ({ isOpen, onClose }: InviteUserModalProps) => {
   };
 
   const onSubmit = async (data: InviteUserFormData) => {
-    const userString = localStorage.getItem("user");
-
-    if (!userString) {
+    if (!user?.workplaceId) {
       toast.error("로그인 정보가 없습니다.");
       return;
     }
 
-    const user = JSON.parse(userString);
-    const workplaceId = user.workplace_id;
+    const { success, error } = await sendInviteClient({
+      email: data.email,
+      siteKey: user.workplaceId,
+    });
 
-    if (!workplaceId) {
-      toast.error("로그인 사업장 정보가 없습니다.");
+    if (!success || error) {
+      toast.error("초대 메일 발송에 실패했습니다.");
       return;
     }
 
-    await sendInviteClient({ ...data, workplaceId });
+    toast.success("초대 메일이 발송되었습니다.");
+    handleClose();
+    onSuccess?.();
   };
 
   return (
@@ -68,11 +70,10 @@ const InviteUserModal = ({ isOpen, onClose }: InviteUserModalProps) => {
     >
       <div className="space-y-4">
         <p className="text-sm text-text-3">새로운 관리자를 초대합니다</p>
-
         <Input
           label="이메일"
           placeholder="knock@example.com"
-          {...register("email", { required: "필수" })}
+          {...register("email")}
           error={errors.email?.message}
           required
         />

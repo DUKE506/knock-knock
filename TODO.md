@@ -195,20 +195,21 @@
 
 ### Task 5-C: 관리자 관리 API 교체 (`/manager/users`)
 
-- [ ] `src/lib/api/user.ts` — `fetchClientUsers()` → `GET /api/v1/MasterSite/W/sign/GetMasterList` 교체 + 응답 매핑
-  - [ ] 필드: `adminSeq`, `loginId`, `name`, `deptName`, `job`, `role`(0=주관리자, 1=부관리자)
-- [ ] `src/lib/api/user.ts` — `sendInviteClient()` → `POST /api/v1/SubRegister/W/InviteSubMaster` 교체
-  - [ ] 로컬 JWT 생성 로직 제거, `{ licenseKey, receiver }` 전송
-  - [ ] `licenseKey`는 `useAuthStore`에서 가져오기
-- [ ] `src/lib/api/user.ts` — `addSubMaster()` 신규 → `POST /api/v1/SubRegister/W/AddSubMaster`
-- [ ] `src/components/manager/users/InviteUserModal.tsx` — `sendInviteClient()` → 새 초대 API 교체
-- [ ] `src/app/manager/users/columns.tsx` — `User` 타입 교체 (`loginId`, `deptName`, `job`, `role` 기반)
-- [ ] `src/app/manager/users/columns.tsx` — `role` 뱃지 컬럼 추가 (주관리자/부관리자)
-- [ ] `src/store/useClientStore.ts` — `User` 타입 및 `getUsers` 연결 수정
-- [ ] `src/app/auth/sub-register/page.tsx` (신규) — 서브마스터 회원가입 페이지
-  - [ ] 초대 이메일 링크 토큰 검증 (`verifyInviteToken` 재사용)
-  - [ ] 폼: `loginId`, `loginPw`, `name`, `deptName`, `job`, `company`(선택)
-  - [ ] `addSubMaster()` 호출 (role: 1 고정, licenseKey: 토큰에서 추출)
+- [x] `src/lib/api/user.ts` — `fetchClientUsers()` → `GET /manager-api/v1/MasterSite/W/sign/GetMasterList` 교체 + 응답 매핑
+  - [x] 필드: `adminSeq`, `loginId`, `name`, `deptName`, `job`, `role`(0=주관리자, 1=부관리자)
+- [x] `src/lib/api/user.ts` — `sendInviteClient()` → `POST /manager-api/v1/SubRegister/W/InviteSubMaster` 교체
+  - [x] 로컬 JWT 생성 로직 제거, `{ siteKey, receiver }` 전송
+  - [x] `siteKey`는 `useAuthStore().user.workplaceId`에서 가져오기
+- [x] `src/lib/api/user.ts` — `addSubMaster()` 신규 → `POST /manager-api/v1/SubRegister/W/AddSubMaster`
+- [x] `src/components/manager/users/InviteUserModal.tsx` — `localStorage` → `useAuthStore` 교체, 새 초대 API 연결
+- [x] `src/app/manager/users/columns.tsx` — `User` 타입 교체 (`loginId`, `deptName`, `job`, `role` 기반)
+- [x] `src/app/manager/users/columns.tsx` — `role` 뱃지 컬럼 추가 (주관리자/부관리자)
+- [x] `src/store/useClientStore.ts` — `User` 타입 및 `getUsers` 연결 수정
+- [x] `src/app/auth/sub-register/page.tsx` (신규) — 서브마스터 회원가입 페이지
+  - [x] 초대 이메일 링크 토큰 검증 (`verifyInviteToken` 재사용)
+  - [x] 폼: `loginId`, `loginPw`, `name`, `deptName`, `job`, `company`(선택)
+  - [x] `addSubMaster()` 호출 (role: 1 고정, licenseKey: 토큰에서 추출)
+- [x] `src/app/auth/client/invite/page.tsx` — 레거시 Supabase 초대 페이지 삭제
 
 ### Task 5-D: 크레딧/설정 API 교체 (`/manager/credits`, `/manager/settings`)
 

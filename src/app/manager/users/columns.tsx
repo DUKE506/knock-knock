@@ -1,17 +1,6 @@
 import { User } from "@/lib/api/user";
 import { ColumnDef } from "@tanstack/react-table";
-import { Calendar, Mail, Phone } from "lucide-react";
 
-// 임시 더미 데이터
-// interface User {
-//   id: string;
-//   name: string;
-//   email: string;
-//   phone: string;
-//   createdAt: string;
-// }
-
-// 테이블 컬럼 정의
 export const columns: ColumnDef<User>[] = [
   {
     accessorKey: "name",
@@ -28,34 +17,40 @@ export const columns: ColumnDef<User>[] = [
     ),
   },
   {
-    accessorKey: "email",
-    header: "이메일",
+    accessorKey: "loginId",
+    header: "아이디",
     cell: ({ row }) => (
-      <div className="flex items-center gap-2 text-sm text-text-2">
-        <Mail className="w-3.5 h-3.5" />
-        {row.original.email}
-      </div>
+      <span className="font-mono text-sm text-text-2">{row.original.loginId}</span>
     ),
   },
   {
-    accessorKey: "phone",
-    header: "전화번호",
+    accessorKey: "deptName",
+    header: "부서",
     cell: ({ row }) => (
-      <div className="flex items-center gap-2 text-sm text-text-2">
-        <Phone className="w-3.5 h-3.5" />
-        <span className="font-mono">{row.original.phone}</span>
-      </div>
+      <span className="text-sm text-text-2">{row.original.deptName}</span>
     ),
   },
-
   {
-    accessorKey: "createdAt",
-    header: "가입일",
+    accessorKey: "job",
+    header: "직책",
     cell: ({ row }) => (
-      <div className="flex items-center gap-2 text-sm text-text-3">
-        <Calendar className="w-3.5 h-3.5" />
-        <span className="font-mono">{row.original.createdAt}</span>
-      </div>
+      <span className="text-sm text-text-2">{row.original.job}</span>
     ),
+  },
+  {
+    accessorKey: "role",
+    header: "역할",
+    cell: ({ row }) => {
+      const isMain = row.original.role === 0;
+      return (
+        <span
+          className={`inline-flex items-center px-2.5 py-1 rounded text-xs font-medium ${
+            isMain ? "bg-green-dim text-green" : "bg-amber-dim text-amber"
+          }`}
+        >
+          {isMain ? "주관리자" : "부관리자"}
+        </span>
+      );
+    },
   },
 ];
