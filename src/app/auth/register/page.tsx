@@ -11,7 +11,14 @@ import { z } from "zod";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
 import { verifyIssueCode, addMainMaster } from "@/lib/api/workplace";
-import { verifyInviteToken, InviteTokenPayload } from "@/lib/actions/verifyInviteToken";
+import { verifyInviteToken } from "@/lib/actions/verifyInviteToken";
+
+type ManagerTokenPayload = {
+  userId: string;
+  licenseKey: string;
+  role: string;
+  siteName: string;
+};
 
 type Step = "verify" | "register";
 
@@ -37,7 +44,7 @@ export default function RegisterPage() {
   const [step, setStep] = useState<Step>("register");
   const [issueCode, setIssueCode] = useState("");
   const [workplaceInfo, setWorkplaceInfo] = useState<{ name: string } | null>(null);
-  const [tokenData, setTokenData] = useState<InviteTokenPayload | null>(null);
+  const [tokenData, setTokenData] = useState<ManagerTokenPayload | null>(null);
   const [isVerifying, setIsVerifying] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
 
@@ -67,7 +74,7 @@ export default function RegisterPage() {
       setIsVerifying(false);
       return;
     }
-    setTokenData(data);
+    setTokenData(data as ManagerTokenPayload);
     setWorkplaceInfo({ name: data.siteName ?? "" });
     setIsVerifying(false);
   };

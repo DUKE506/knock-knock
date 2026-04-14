@@ -150,6 +150,19 @@
 - [x] `src/app/auth/register/page.tsx` — `createUser()` → `addMainMaster()` 교체 (`role: 0` 고정, `loginId`는 토큰 이메일 사용)
 - [x] `src/components/admin/users/InviteUserModal.tsx` — 이메일 도메인 검증 (`@s-tec.co.kr` 한정)
 
+### Task 4-F: 슈퍼관리자 회원가입 페이지 수정 (`/auth/invite`)
+
+**`verifyInviteToken` 범용화 (공통)**
+- [x] `src/lib/actions/verifyInviteToken.ts` — `InviteTokenPayload` 인터페이스 제거, 반환 타입을 `Record<string, any>`로 변경
+- [x] `src/app/auth/register/page.tsx` — `InviteTokenPayload` import 제거, `{ userId, licenseKey, role, siteName }` 로컬 캐스팅으로 교체
+
+**`/auth/invite` 버그 수정 + 정리**
+- [x] `src/app/auth/invite/page.tsx` — `result.payload` → `result.data` 로 수정 (반환 인터페이스 불일치 버그)
+- [x] `src/app/auth/invite/page.tsx` — `SuperAdminTokenPayload` 로컬 타입 정의 후 캐스팅 (`userId`, `role`)
+- [x] `src/app/auth/invite/page.tsx` — `payload.email` → `data.userId` 로 수정 (필드 불일치 버그)
+- [x] `src/app/auth/invite/page.tsx` — 불필요한 `verifyToken`, `JWTPayload`, `TokenPayload` 제거
+- [x] `src/app/auth/invite/page.tsx` — `loginId` 입력 필드 제거, 토큰 이메일(`userId`)을 `loginId`로 사용
+
 ---
 
 ## Phase 5: 관리자 역할 위임 (보류)

@@ -1,10 +1,9 @@
 "use client";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
+import { verifyInviteToken } from "@/lib/actions/verifyInviteToken";
 import { createAdmin } from "@/lib/api/admin/admin";
-import { verifyToken } from "@/lib/utils/verifyJwt";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { JWTPayload } from "jose";
 import { UserPlus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -12,13 +11,13 @@ import { useForm } from "react-hook-form";
 import { toast, Toaster } from "sonner";
 import z from "zod";
 
-interface TokenPayload extends JWTPayload {
-  email: string;
-}
+type SuperAdminTokenPayload = {
+  userId: string;
+  role: string;
+};
 
 const signupSchema = z
   .object({
-    loginId: z.string().min(1, "아이디를 입력하세요"),
     name: z.string().min(1, "이름을 입력하세요"),
     password: z.string().min(8, "8자리 이상 입력하세요"),
     passwordConfirm: z.string(),
@@ -49,27 +48,27 @@ const InvitePage = () => {
   });
 
   useEffect(() => {
-    const token = params.get("token");
+    const token = params.get("access");
+    console.log(token);
     if (!token) {
       setError("초대 링크가 유효하지 않습니다.");
       setIsVerifying(false);
       return;
     }
 
-    verifyInviteToken(token);
-  }, [params]);
+    handleVerifyToken(token);
+  }, []);
 
-  const verifyInviteToken = async (token: string) => {
+  const handleVerifyToken = async (token: string) => {
     try {
-      const result = await verifyToken(token);
-
-      if (!result || !result.payload) {
+      const { data, error } = await verifyInviteToken(token);
+      if (error || !data) {
         setError("초대 토큰이 유효하지 않습니다.");
         return;
       }
 
-      const payload = result.payload as TokenPayload;
-      setEmail(payload.email);
+      const payload = data as SuperAdminTokenPayload;
+      setEmail(payload.userId);
     } catch (err: any) {
       if (err.message?.includes("expired")) {
         setError("초대 링크가 만료되었습니다. 관리자에게 재초대를 요청하세요.");
@@ -84,14 +83,14 @@ const InvitePage = () => {
   const onSubmit = async (data: SignupFormData) => {
     try {
       const { passwordConfirm, ...rest } = data;
-      const res = await createAdmin({ ...rest, password: rest.password });
+      const res = await createAdmin({ ...rest, loginId: email });
 
       if (res.error) {
         toast.error("슈퍼관리자 생성 실패");
         return;
       }
 
-      router.push("/auth/login");
+      router.push("/login");
     } catch (err) {
       console.error("회원가입 실패:", err);
     }
@@ -164,16 +163,6 @@ const InvitePage = () => {
                   className="w-full px-4 py-2.5 text-sm border border-border rounded-md bg-bg text-text-2 cursor-not-allowed"
                 />
               </div>
-
-              {/* 아이디 */}
-              <Input
-                label="아이디"
-                placeholder="사용할 아이디 입력"
-                {...register("loginId")}
-                error={errors.loginId?.message}
-                disabled={isSubmitting}
-                required
-              />
 
               {/* 이름 */}
               <Input
