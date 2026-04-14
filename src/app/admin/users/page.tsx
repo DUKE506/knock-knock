@@ -78,7 +78,7 @@ export default function AdminsPage() {
         enableFiltering={true}
         enablePagination={true}
         pageSize={10}
-        searchPlaceholder="이름, 이메일, 전화번호 검색..."
+        searchPlaceholder="이름, 이메일 검색..."
         emptyMessage="등록된 관리자가 없습니다."
         serverSide={{
           totalCount: meta.totalCount,
