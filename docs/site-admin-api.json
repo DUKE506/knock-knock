@@ -1,0 +1,653 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "SportalSiteAdminApi",
+    "version": "v1",
+    "description": "고객사(사이트마스터) 백엔드 API 명세\n\n[Phase 5 구현 대상 - 기존 기능 교체]\n• POST /api/v1/MasterLogin/W/Login → 매니저 로그인 (현재: Supabase loginUser)\n• GET /api/v1/MasterSite/W/sign/GetMyProfile → 프로필 조회 (현재: 미연동)\n• GET /api/v1/MasterSite/W/sign/GetMobileUserList → 카드 발급 요청 목록 (현재: Supabase fetchCardRequests)\n• POST /api/v1/MasterSite/W/sign/ApproveOrRejectUser → 카드 승인/거부 (현재: Supabase approveCardRequest/rejectCardRequest)\n• GET /api/v1/MasterSite/W/sign/GetMasterList → 관리자 목록 (현재: Supabase fetchClientUsers)\n• POST /api/v1/SubRegister/W/InviteSubMaster → 관리자 초대메일 (현재: 로컬 JWT 생성)\n• POST /api/v1/SubRegister/W/AddSubMaster → 서브마스터 등록 (현재: 미구현)\n• GET /api/v1/MasterSite/W/sign/GetSiteDetail → 사업장 정보/설정 (현재: 더미 데이터)\n• GET /api/v1/MasterSite/W/sign/GetCreditHistory → 크레딧 이력 (현재: Supabase fetchCreditHistory)\n\n[추후 적용 예정]\n• POST /api/v1/MasterLogin/W/Refresh → 토큰 재발급\n• GET /api/v1/MasterSite/W/sign/GetMobileUserDetail → 카드 상세\n• PATCH /api/v1/MasterSite/W/sign/UpdateSiteUser → 카드 수정\n• GET /api/v1/MasterSite/W/sign/GetSubMasterList → 서브마스터 목록\n• PUT /api/v1/MasterSite/W/sign/ChangeMainMaster → 주관리자 교체 (Phase 6 보류)\n• POST /api/v1/SubRegister/W/ExistsSubMaster → 아이디 중복검사\n• GET /api/v1/MasterSite/W/sign/GetMasterDetail → 마스터 상세\n• GET /api/v1/MasterSite/W/sign/CreditConsumeHistory → 크레딧 사용이력\n\n[DevZone - 외부 API (백엔드 내부용, 프론트 미적용)]\n• GET /api/v1/DevZone/W/GetSiteInfo\n• POST /api/v1/DevZone/W/IssueRequest\n• POST /api/v1/DevZone/W/GetUserInfo\n• GET /api/v1/DevZone/W/GetUserList\n• DELETE /api/v1/DevZone/W/CancelIssue\n• DELETE /api/v1/DevZone/W/RemoveUser\n• PATCH /api/v1/DevZone/W/UpdateUser"
+  },
+  "paths": {
+    "/api/v1/DevZone/W/GetSiteInfo": {
+      "get": {
+        "tags": ["DevZone"],
+        "summary": "라이센스 키에 해당하는 사업장 정보 반환",
+        "x-applied": "skip",
+        "x-note": "외부 API - 백엔드 내부용, 프론트 미적용",
+        "parameters": [
+          {
+            "name": "licenseKey",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/DevZone/W/IssueRequest": {
+      "post": {
+        "tags": ["DevZone"],
+        "summary": "발급요청 OK",
+        "x-applied": "skip",
+        "x-note": "외부 API - 백엔드 내부용, 프론트 미적용",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": ["email", "name", "phoneNumber", "siteKey"],
+                "type": "object",
+                "properties": {
+                  "siteKey": { "type": "string" },
+                  "name": { "type": "string" },
+                  "dept": { "type": "string" },
+                  "job": { "type": "string" },
+                  "email": { "type": "string" },
+                  "company": { "type": "string" },
+                  "sabun": { "type": "string" },
+                  "image": { "type": "string", "format": "binary" },
+                  "phoneNumber": { "type": "string" },
+                  "mobileKey": { "type": "string" },
+                  "cardStartDt": { "type": "string", "format": "date-time" },
+                  "cardEndDt": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/DevZone/W/GetUserInfo": {
+      "post": {
+        "tags": ["DevZone"],
+        "summary": "사용자 정보 조회 OK",
+        "x-applied": "skip",
+        "x-note": "외부 API - 백엔드 내부용, 프론트 미적용",
+        "parameters": [
+          {
+            "name": "siteKey",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "phoneNumber",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/DevZone/W/GetUserList": {
+      "get": {
+        "tags": ["DevZone"],
+        "summary": "라이센스키에 해당하는 사업장 사용자 리스트 조회 OK",
+        "x-applied": "skip",
+        "x-note": "외부 API - 백엔드 내부용, 프론트 미적용",
+        "parameters": [
+          {
+            "name": "licenseKey",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "fromDt",
+            "in": "query",
+            "schema": { "type": "string", "format": "date-time" }
+          },
+          {
+            "name": "toDt",
+            "in": "query",
+            "schema": { "type": "string", "format": "date-time" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/DevZone/W/CancelIssue": {
+      "delete": {
+        "tags": ["DevZone"],
+        "summary": "발급 취소 OK",
+        "x-applied": "skip",
+        "x-note": "외부 API - 백엔드 내부용, 프론트 미적용",
+        "parameters": [
+          {
+            "name": "siteKey",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "phoneNumber",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/DevZone/W/RemoveUser": {
+      "delete": {
+        "tags": ["DevZone"],
+        "summary": "사용자 삭제",
+        "x-applied": "skip",
+        "x-note": "외부 API - 백엔드 내부용, 프론트 미적용",
+        "parameters": [
+          {
+            "name": "siteKey",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "phoneNumber",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/DevZone/W/UpdateUser": {
+      "patch": {
+        "tags": ["DevZone"],
+        "summary": "사용자 정보 수정",
+        "x-applied": "skip",
+        "x-note": "외부 API - 백엔드 내부용, 프론트 미적용",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": ["phoneNumber", "siteKey"],
+                "type": "object",
+                "properties": {
+                  "siteKey": { "type": "string" },
+                  "phoneNumber": { "type": "string" },
+                  "name": { "type": "string" },
+                  "dept": { "type": "string" },
+                  "job": { "type": "string" },
+                  "email": { "type": "string" },
+                  "company": { "type": "string" },
+                  "sabun": { "type": "string" },
+                  "imageRemove": { "type": "boolean" },
+                  "image": { "type": "string", "format": "binary" },
+                  "cardStartDt": { "type": "string", "format": "date-time" },
+                  "cardEndDt": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterLogin/W/Login": {
+      "post": {
+        "tags": ["Login"],
+        "summary": "사이트마스터 로그인",
+        "x-applied": false,
+        "x-phase": "5-A",
+        "x-replaces": "loginUser() in src/lib/api/user.ts (Supabase)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SportalSiteAdminApi_Comm_Dto_Login_Request_LoginDto"
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterLogin/W/Refresh": {
+      "post": {
+        "tags": ["Login"],
+        "summary": "마스터 토큰 재발급",
+        "x-applied": false,
+        "x-phase": "future",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SportalSiteAdminApi_Comm_Dto_Login_Request_RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterLogin/W/sign/Logout": {
+      "get": {
+        "tags": ["Login"],
+        "summary": "마스터 로그아웃",
+        "x-applied": false,
+        "x-phase": "future",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SubRegister/W/ExistsSubMaster": {
+      "post": {
+        "tags": ["MasterRegister"],
+        "summary": "서브마스터 아이디 중복검사",
+        "x-applied": false,
+        "x-phase": "future",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SportalSiteAdminApi_Comm_Dto_Register_Master_Request_ExistsSubMasterLoginIdDto"
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SubRegister/W/InviteSubMaster": {
+      "post": {
+        "tags": ["MasterRegister"],
+        "summary": "서브마스터 초대메일",
+        "x-applied": false,
+        "x-phase": "5-C",
+        "x-replaces": "sendInviteClient() in src/lib/api/user.ts (로컬 JWT 생성)",
+        "x-dto": "{ licenseKey, receiver }",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SportalSiteAdminApi_Comm_Dto_Register_Master_Request_SendSubMasterInviteDto"
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/SubRegister/W/AddSubMaster": {
+      "post": {
+        "tags": ["MasterRegister"],
+        "summary": "서브마스터 추가",
+        "x-applied": false,
+        "x-phase": "5-C",
+        "x-replaces": "미구현 - 신규 서브마스터 회원가입 페이지 필요",
+        "x-dto": "{ loginId, loginPw, name, company, deptName, job, role, licenseKey }",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SportalSiteAdminApi_Comm_Dto_Register_Master_Request_AddSubMasterDto"
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/GetSiteDetail": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "로그인한 사용자의 사업장 상세정보 조회",
+        "x-applied": false,
+        "x-phase": "5-D",
+        "x-replaces": "fetchWorkplaceById() Supabase (credits), 더미 데이터 (settings)",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/GetCreditHistory": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "사업장 크레딧 이력 조회",
+        "x-applied": false,
+        "x-phase": "5-D",
+        "x-replaces": "fetchCreditHistory() Supabase in src/lib/api/credit.ts",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "gubun",
+            "in": "query",
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "searchKey",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/GetMyProfile": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "프로필 조회",
+        "x-applied": false,
+        "x-phase": "5-A",
+        "x-replaces": "미연동 - 로그인 후 프로필 바인딩에 사용",
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/GetMasterList": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "마스터 리스트 조회",
+        "x-applied": false,
+        "x-phase": "5-C",
+        "x-replaces": "fetchClientUsers() Supabase in src/lib/api/user.ts",
+        "x-response-fields": "adminSeq, loginId, name, deptName, job, role(0=주관리자,1=부관리자)",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "searchKey",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/GetMasterDetail": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "마스터 상세 조회",
+        "x-applied": false,
+        "x-phase": "future",
+        "parameters": [
+          {
+            "name": "adminSeq",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/GetMobileUserList": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "모바일 사용자(카드 발급 요청) 리스트 조회",
+        "x-applied": false,
+        "x-phase": "5-B",
+        "x-replaces": "fetchCardRequests() Supabase in src/lib/api/cardRequest.ts",
+        "x-status-mapping": "status(0=대기,1=활성화대기,2=활성화) → pending/approved + isActivated",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "searchKey",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/GetMobileUserDetail": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "모바일 사용자(카드) 상세 조회",
+        "x-applied": false,
+        "x-phase": "future",
+        "x-replaces": "CardDetailModal - 현재 Supabase cards 테이블 직접 조회",
+        "parameters": [
+          {
+            "name": "userSeq",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/ApproveOrRejectUser": {
+      "post": {
+        "tags": ["Site"],
+        "summary": "모바일 사용자 승인 or 거절",
+        "x-applied": false,
+        "x-phase": "5-B",
+        "x-replaces": "approveCardRequest()/rejectCardRequest() Supabase in src/lib/api/cardRequest.ts",
+        "x-dto": "{ userSeq, isApprove }",
+        "x-note": "승인 시 카드 자동 생성/이메일 발송은 백엔드가 처리 (createCard, sendCardActivationEmail 제거)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SportalSiteAdminApi_Comm_Dto_Master_Request_ApproveDto"
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/UpdateSiteUser": {
+      "patch": {
+        "tags": ["Site"],
+        "summary": "모바일 사용자 수정",
+        "x-applied": false,
+        "x-phase": "future",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": ["userSeq"],
+                "type": "object",
+                "properties": {
+                  "userSeq": { "type": "string" },
+                  "name": { "type": "string" },
+                  "dept": { "type": "string" },
+                  "job": { "type": "string" },
+                  "email": { "type": "string" },
+                  "company": { "type": "string" },
+                  "sabun": { "type": "string" },
+                  "imageRemove": { "type": "boolean" },
+                  "image": { "type": "string", "format": "binary" },
+                  "phoneNumber": { "type": "string" },
+                  "mobileKey": { "type": "string" },
+                  "cardStartDt": { "type": "string", "format": "date-time" },
+                  "cardEndDt": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/CreditConsumeHistory": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "크레딧 사용이력 조회",
+        "x-applied": false,
+        "x-phase": "future",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "searchKey",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/GetSubMasterList": {
+      "get": {
+        "tags": ["Site"],
+        "summary": "서브마스터 리스트 조회",
+        "x-applied": false,
+        "x-phase": "future",
+        "parameters": [
+          {
+            "name": "searchKey",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/v1/MasterSite/W/sign/ChangeMainMaster": {
+      "put": {
+        "tags": ["Site"],
+        "summary": "메인마스터 교체",
+        "x-applied": false,
+        "x-phase": "future",
+        "x-note": "Phase 6 (관리자 역할 위임) 에서 처리 예정",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SportalSiteAdminApi_Comm_Dto_Master_Request_ChangeMainMasterDto"
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SportalSiteAdminApi_Comm_Dto_Login_Request_LoginDto": {
+        "required": ["loginId", "loginPw"],
+        "type": "object",
+        "properties": {
+          "loginId": { "minLength": 1, "type": "string" },
+          "loginPw": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSiteAdminApi_Comm_Dto_Login_Request_RefreshTokenDto": {
+        "required": ["refreshToken"],
+        "type": "object",
+        "properties": {
+          "refreshToken": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSiteAdminApi_Comm_Dto_Master_Request_ApproveDto": {
+        "type": "object",
+        "properties": {
+          "userSeq": { "type": "string", "nullable": true },
+          "isApprove": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSiteAdminApi_Comm_Dto_Master_Request_ChangeMainMasterDto": {
+        "type": "object",
+        "properties": {
+          "adminSeq": { "type": "string", "nullable": true }
+        },
+        "additionalProperties": false
+      },
+      "SportalSiteAdminApi_Comm_Dto_Register_Master_Request_AddSubMasterDto": {
+        "required": ["deptName", "job", "licenseKey", "loginId", "loginPw", "name", "role"],
+        "type": "object",
+        "properties": {
+          "loginId": { "minLength": 1, "type": "string" },
+          "loginPw": { "minLength": 1, "type": "string" },
+          "name": { "minLength": 1, "type": "string" },
+          "company": { "type": "string", "nullable": true },
+          "deptName": { "minLength": 1, "type": "string" },
+          "job": { "minLength": 1, "type": "string" },
+          "role": { "type": "integer", "format": "int32" },
+          "licenseKey": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSiteAdminApi_Comm_Dto_Register_Master_Request_ExistsSubMasterLoginIdDto": {
+        "required": ["loginId"],
+        "type": "object",
+        "properties": {
+          "loginId": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "SportalSiteAdminApi_Comm_Dto_Register_Master_Request_SendSubMasterInviteDto": {
+        "required": ["licenseKey", "receiver"],
+        "type": "object",
+        "properties": {
+          "licenseKey": { "minLength": 1, "type": "string" },
+          "receiver": { "minLength": 1, "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "입력양식 - 'Bearer' [space] and then your token.\r\n                예: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  },
+  "security": [{ "Bearer": [] }],
+  "tags": [
+    { "name": "DevZone" },
+    { "name": "Login" },
+    { "name": "MasterRegister" },
+    { "name": "Site" }
+  ]
+}

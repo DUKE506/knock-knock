@@ -165,15 +165,67 @@
 
 ---
 
-## Phase 5: 관리자 역할 위임 (보류)
+## Phase 5: 고객사 백엔드 API 교체
 
-### Task 4-A: 주관리자/부관리자 기능
+> 참고 문서: [docs/site-admin-api.json](docs/site-admin-api.json)
+> 각 Task는 순서대로 진행 (5-A 완료 후 5-B 시작 — 토큰 의존성)
+
+### Task 5-A: API 클라이언트 기반 + 매니저 로그인 교체 (`/login`)
+
+- [ ] `next.config.ts` — 고객사 API 서버 URL 환경변수/프록시 확인 (슈퍼관리자와 별도 서버인 경우 추가)
+- [ ] `src/lib/api/manager/auth.ts` — `loginManager()` 신규 → `POST /api/v1/MasterLogin/W/Login`
+- [ ] `src/lib/api/manager/auth.ts` — `fetchManagerProfile()` 신규 → `GET /api/v1/MasterSite/W/sign/GetMyProfile`
+- [ ] `src/store/useAuthStore.ts` — 매니저용 토큰 저장 및 `workplaceId`(siteKey), `licenseKey` 필드 확인
+- [ ] `src/app/login/page.tsx` — `loginType === "client"` 분기 → `loginManager()` 교체 (현재: Supabase `loginUser`)
+- [ ] `src/app/login/page.tsx` — 로그인 성공 후 `fetchManagerProfile()` 호출로 사용자 정보 바인딩
+
+### Task 5-B: 카드 발급 관리 API 교체 (`/manager/card-requests`)
+
+- [ ] `src/lib/api/cardRequest.ts` — `fetchCardRequests()` → `GET /api/v1/MasterSite/W/sign/GetMobileUserList` 교체 + 응답 매핑
+  - [ ] `status` 매핑: IssueStatus 0→"pending", 1/2→"approved"
+  - [ ] `isActivated` 매핑: IssueStatus == 2
+  - [ ] `id` → `userSeq` (백엔드 식별자) 매핑
+- [ ] `src/lib/api/cardRequest.ts` — `approveCardRequest()` → `POST /api/v1/MasterSite/W/sign/ApproveOrRejectUser` (isApprove: true) 교체
+  - [ ] `createCard()`, `sendCardActivationEmail()` 호출 제거 (백엔드가 처리)
+- [ ] `src/lib/api/cardRequest.ts` — `rejectCardRequest()` → `POST /api/v1/MasterSite/W/sign/ApproveOrRejectUser` (isApprove: false) 교체
+- [ ] `src/types/manager/card/cardRequest.ts` — `id` 필드를 `userSeq` 기반으로 수정
+- [ ] `src/lib/api/card.ts` — `createCard()` 의존성 제거 확인 (cardRequest에서만 호출됨)
+
+### Task 5-C: 관리자 관리 API 교체 (`/manager/users`)
+
+- [ ] `src/lib/api/user.ts` — `fetchClientUsers()` → `GET /api/v1/MasterSite/W/sign/GetMasterList` 교체 + 응답 매핑
+  - [ ] 필드: `adminSeq`, `loginId`, `name`, `deptName`, `job`, `role`(0=주관리자, 1=부관리자)
+- [ ] `src/lib/api/user.ts` — `sendInviteClient()` → `POST /api/v1/SubRegister/W/InviteSubMaster` 교체
+  - [ ] 로컬 JWT 생성 로직 제거, `{ licenseKey, receiver }` 전송
+  - [ ] `licenseKey`는 `useAuthStore`에서 가져오기
+- [ ] `src/lib/api/user.ts` — `addSubMaster()` 신규 → `POST /api/v1/SubRegister/W/AddSubMaster`
+- [ ] `src/components/manager/users/InviteUserModal.tsx` — `sendInviteClient()` → 새 초대 API 교체
+- [ ] `src/app/manager/users/columns.tsx` — `User` 타입 교체 (`loginId`, `deptName`, `job`, `role` 기반)
+- [ ] `src/app/manager/users/columns.tsx` — `role` 뱃지 컬럼 추가 (주관리자/부관리자)
+- [ ] `src/store/useClientStore.ts` — `User` 타입 및 `getUsers` 연결 수정
+- [ ] `src/app/auth/sub-register/page.tsx` (신규) — 서브마스터 회원가입 페이지
+  - [ ] 초대 이메일 링크 토큰 검증 (`verifyInviteToken` 재사용)
+  - [ ] 폼: `loginId`, `loginPw`, `name`, `deptName`, `job`, `company`(선택)
+  - [ ] `addSubMaster()` 호출 (role: 1 고정, licenseKey: 토큰에서 추출)
+
+### Task 5-D: 크레딧/설정 API 교체 (`/manager/credits`, `/manager/settings`)
+
+- [ ] `src/lib/api/manager/site.ts` (신규) — `fetchSiteDetail()` → `GET /api/v1/MasterSite/W/sign/GetSiteDetail`
+  - [ ] 응답 매핑: `siteName`, `licenseKey`, `creditCount`, `creditUsed`, `createDt`
+- [ ] `src/lib/api/credit.ts` — `fetchManagerCreditHistory()` 신규 → `GET /api/v1/MasterSite/W/sign/GetCreditHistory` + 응답 매핑
+  - [ ] `gubun` 필터: 1=충전, 2=사용 (기존 `fetchCreditHistory` Supabase용은 유지)
+- [ ] `src/app/manager/credits/page.tsx` — `fetchWorkplaceById()` → `fetchSiteDetail()` 교체 (크레딧 현황 카드)
+- [ ] `src/app/manager/credits/page.tsx` — `fetchCreditHistory()` → `fetchManagerCreditHistory()` 교체
+- [ ] `src/app/manager/settings/page.tsx` — 더미 데이터 → `fetchSiteDetail()` 실제 API 연동
+
+---
+
+## Phase 6: 관리자 역할 위임 (보류)
+
+### Task 6-A: 주관리자/부관리자 기능
 
 - [ ] `src/lib/api/user.ts` — `delegatePrimaryRole(currentId, targetId, workplaceId)` 함수 추가
-  - [ ] 현재 주관리자 → `sub_admin` 변경
-  - [ ] 대상 관리자 → `primary_admin` 변경
-  - [ ] `workplaces.manager_email` 업데이트
-- [ ] `src/app/manager/users/columns.tsx` — "역할" 컬럼 추가 (주관리자/부관리자 뱃지)
+  - [ ] `PUT /api/v1/MasterSite/W/sign/ChangeMainMaster` 호출 (`{ adminSeq }`)
 - [ ] `src/app/manager/users/columns.tsx` — "위임" 버튼 추가 (주관리자만 노출)
 - [ ] `src/app/manager/users/page.tsx` — 위임 핸들러 추가
 - [ ] `src/app/manager/users/page.tsx` — 위임 확인 다이얼로그 추가
@@ -181,9 +233,9 @@
 
 ---
 
-## Phase 6: API 정리 (보류)
+## Phase 7: API 정리 (보류)
 
-### Task 6-A: 백엔드 교체 대비 API 정리
+### Task 7-A: 백엔드 교체 대비 API 정리
 
 - [ ] `src/lib/api/credit.ts` — 미사용 함수 정리 (`createCreditRequest`, `redeemCreditCode`, `approveCreditRequest`, `rejectCreditRequest`)
 - [ ] `src/lib/api/cardRequest.ts` — 반환 타입 `{ data, error }` 패턴 통일 확인
