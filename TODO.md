@@ -172,12 +172,14 @@
 
 ### Task 5-A: API 클라이언트 기반 + 매니저 로그인 교체 (`/login`)
 
-- [ ] `next.config.ts` — 고객사 API 서버 URL 환경변수/프록시 확인 (슈퍼관리자와 별도 서버인 경우 추가)
-- [ ] `src/lib/api/manager/auth.ts` — `loginManager()` 신규 → `POST /api/v1/MasterLogin/W/Login`
-- [ ] `src/lib/api/manager/auth.ts` — `fetchManagerProfile()` 신규 → `GET /api/v1/MasterSite/W/sign/GetMyProfile`
-- [ ] `src/store/useAuthStore.ts` — 매니저용 토큰 저장 및 `workplaceId`(siteKey), `licenseKey` 필드 확인
-- [ ] `src/app/login/page.tsx` — `loginType === "client"` 분기 → `loginManager()` 교체 (현재: Supabase `loginUser`)
-- [ ] `src/app/login/page.tsx` — 로그인 성공 후 `fetchManagerProfile()` 호출로 사용자 정보 바인딩
+- [x] `.env.local` — `NEXT_PUBLIC_MANAGER_API_URL` 추가 (포트 5208 별도 서버)
+- [x] `next.config.ts` — `/manager-api/v1/:path*` rewrite 추가 (포트 5208)
+- [x] `src/lib/api/manager/auth.ts` — `loginManager()` 신규 → `POST /manager-api/v1/MasterLogin/W/Login`
+- [x] `src/lib/api/manager/auth.ts` — `fetchManagerProfile()` 신규 → `GET /manager-api/v1/MasterSite/W/sign/GetMyProfile`
+- [x] `src/store/useAuthStore.ts` — `workplaceId`(siteKey), `workplaceName`(siteName) 기존 필드로 커버 확인
+- [x] `src/app/login/page.tsx` — `loginType === "client"` 분기 → `loginManager()` 교체
+- [x] `src/app/login/page.tsx` — 로그인 성공 후 `fetchManagerProfile()` 호출로 사용자 정보 바인딩
+- [x] `src/components/layout/manager/Topnav.tsx` — 시간 제거, 고객사명 표시, 직책(`job`) 노출
 
 ### Task 5-B: 카드 발급 관리 API 교체 (`/manager/card-requests`)
 

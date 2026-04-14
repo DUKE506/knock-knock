@@ -10,8 +10,8 @@ import { toast, Toaster } from "sonner";
 import Link from "next/link";
 import Button from "@/components/common/Button";
 import Input from "@/components/common/Input";
-import { loginUser } from "@/lib/api/user";
 import { loginAdmin, fetchAdminProfile } from "@/lib/api/admin/admin";
+import { loginManager, fetchManagerProfile } from "@/lib/api/manager/auth";
 import { AuthUser, useAuthStore } from "@/store/useAuthStore";
 
 // 로그인 폼 스키마
@@ -74,33 +74,40 @@ export default function LoginPage() {
     } else {
       //클라이언트
       try {
-        const { user, error } = await loginUser(data.email, data.password);
+        const { data: tokens, error } = await loginManager({
+          loginId: data.email,
+          password: data.password,
+        });
 
-        if (error || !user) {
+        if (error || !tokens) {
           toast.error("이메일 또는 비밀번호가 일치하지 않습니다.");
           return;
         }
 
-        //공통 AuthUser 타입 변환
+        setTokens(tokens.accessToken, tokens.refreshToken);
+
+        const { data: profile, error: profileError } = await fetchManagerProfile();
+        if (profileError || !profile) {
+          toast.error("사용자 정보 조회에 실패했습니다.");
+          return;
+        }
+
         const authUser: AuthUser = {
-          id: user.id,
-          name: user.name,
-          phone: user.phone,
-          email: user.email,
+          id: profile.loginId,
+          name: profile.name,
+          email: profile.loginId,
           isAdmin: false,
-          workplaceId: user.workplace_id,
-          role: "메인",
-          workplaceName: user.workplaces.name,
+          role: profile.role,
+          workplaceId: profile.siteKey,
+          workplaceName: profile.siteName,
+          deptName: profile.deptName,
+          job: profile.job,
         };
 
         setUser(authUser);
-
-        // 로그인 성공
-        // localStorage.setItem("user", JSON.stringify(user));
         toast.success("로그인 성공!");
-
         router.push("/manager/card-requests");
-      } catch (error) {
+      } catch (err) {
         toast.error("로그인에 실패했습니다.");
       }
     }
