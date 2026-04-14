@@ -55,11 +55,7 @@ export default function AdminsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-text">관리자</h1>
-          <p className="text-sm text-text-3 mt-1">
-            전체 {admins.length}명 • 슈퍼관리자{" "}
-            {admins.filter((a) => a.role === "super_admin").length}명 • 관리자{" "}
-            {admins.filter((a) => a.role === "admin").length}명
-          </p>
+          <p className="text-sm text-text-3 mt-1">백오피스 관리자 목록</p>
         </div>
         <Button
           variant="primary"

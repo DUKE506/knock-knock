@@ -25,7 +25,7 @@ export const historyColumns: ColumnDef<CreditHistory>[] = [
   },
   {
     accessorKey: "workplaceName",
-    header: "사업장",
+    header: "고객사",
     cell: ({ row }) => (
       <div className="text-sm text-text-2">
         {row.original.workplaceName || "-"}

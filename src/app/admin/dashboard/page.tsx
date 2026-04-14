@@ -28,7 +28,7 @@ export default function DashboardPage() {
     }).length,
   };
 
-  // 최근 사업장 (최대 5개)
+  // 최근 고객사 (최대 5개)
   const recentWorkplaces = workplaces.slice(0, 5);
 
   return (
@@ -40,7 +40,7 @@ export default function DashboardPage() {
           <p className="text-sm text-text-3 mt-1">시스템 통계 및 최근 활동</p>
         </div>
         {/* <Link href="/admin/workplaces">
-          <Button variant="primary" icon={Plus} title="사업장 생성" />
+          <Button variant="primary" icon={Plus} title="고객사 생성" />
         </Link> */}
       </div>
 
@@ -54,7 +54,7 @@ export default function DashboardPage() {
               <div className="w-10 h-10 rounded-lg bg-accent-dim flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-accent" />
               </div>
-              <div className="text-sm font-medium text-text-2">전체 사업장</div>
+              <div className="text-sm font-medium text-text-2">전체 고객사</div>
             </div>
             <div className="flex items-center gap-1 text-xs text-green">
               <TrendingUp className="w-3 h-3" />
@@ -120,9 +120,9 @@ export default function DashboardPage() {
         {/* Section Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div>
-            <h2 className="text-base font-semibold text-text">최근 사업장</h2>
+            <h2 className="text-base font-semibold text-text">최근 고객사</h2>
             <p className="text-xs text-text-3 mt-0.5">
-              최근에 생성된 사업장 목록
+              최근에 생성된 고객사 목록
             </p>
           </div>
           <Link href="/admin/workplaces">
@@ -140,13 +140,13 @@ export default function DashboardPage() {
         {recentWorkplaces.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <Building2 className="w-12 h-12 text-text-3 mx-auto mb-3 opacity-50" />
-            <p className="text-sm text-text-3">등록된 사업장이 없습니다.</p>
+            <p className="text-sm text-text-3">등록된 고객사가 없습니다.</p>
             <Link href="/admin/workplaces">
               <Button
                 variant="primary"
                 size="sm"
                 icon={Plus}
-                title="첫 사업장 생성"
+                title="첫 고객사 생성"
                 className="mt-4"
               />
             </Link>
@@ -157,7 +157,7 @@ export default function DashboardPage() {
               <thead>
                 <tr className="bg-bg border-b border-border">
                   <th className="px-6 py-3 text-left text-xs font-medium text-text-3 uppercase tracking-wider">
-                    사업장명
+                    고객사명
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-text-3 uppercase tracking-wider">
                     발급코드

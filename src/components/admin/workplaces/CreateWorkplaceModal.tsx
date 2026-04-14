@@ -52,17 +52,17 @@ export default function CreateWorkplaceModal({
       });
 
       if (error || !success) {
-        toast.error("사업장 생성에 실패했습니다.");
+        toast.error("고객사 생성에 실패했습니다.");
         return;
       }
 
       await fetchWorkplaces({ pageNumber: 1, pageSize: 20 });
-      toast.success("사업장이 생성되었습니다.");
+      toast.success("고객사가 생성되었습니다.");
       reset();
       onClose();
     } catch (error) {
-      console.error("사업장 생성 실패:", error);
-      toast.error("사업장 생성에 실패했습니다.");
+      console.error("고객사 생성 실패:", error);
+      toast.error("고객사 생성에 실패했습니다.");
     }
   };
 
@@ -87,7 +87,7 @@ export default function CreateWorkplaceModal({
       submitDisabled={!isValid}
     >
       <div className="space-y-5">
-        {/* 사업장명 */}
+        {/* 고객사명 */}
         <Input
           label="고객사명"
           placeholder="예: A 아파트, B 병원"

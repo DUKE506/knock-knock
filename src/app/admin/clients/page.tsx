@@ -49,8 +49,8 @@ export default function WorkplacesPage() {
         enableFiltering={true}
         enablePagination={true}
         pageSize={10}
-        searchPlaceholder="사업장명, 라이센스 검색..."
-        emptyMessage="등록된 사업장이 없습니다."
+        searchPlaceholder="고객사명, 라이센스 검색..."
+        emptyMessage="등록된 고객사가 없습니다."
         serverSide={{
           totalCount: meta.totalCount,
           totalPages: meta.totalPages,

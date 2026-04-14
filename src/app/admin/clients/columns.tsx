@@ -6,7 +6,7 @@ import { Workplace } from "@/types/workplace";
 export const workplaceColumns: ColumnDef<Workplace>[] = [
   {
     accessorKey: "name",
-    header: "사업장명",
+    header: "고객사명",
     cell: ({ row }) => (
       <span className="font-medium text-text">{row.original.name}</span>
     ),

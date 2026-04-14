@@ -26,7 +26,7 @@ export default function AdminCreditsPage() {
         <div>
           <h1 className="text-2xl font-semibold text-text">크레딧 관리</h1>
           <p className="text-sm text-text-3 mt-1">
-            사업장별 크레딧 충전 및 이력 관리
+            고객사별 크레딧 충전 및 이력 관리
           </p>
         </div>
         <Button
@@ -46,7 +46,7 @@ export default function AdminCreditsPage() {
         enableFiltering={true}
         enablePagination={true}
         pageSize={10}
-        searchPlaceholder="사업장 검색..."
+        searchPlaceholder="고객사 검색..."
         emptyMessage="이력이 없습니다."
         serverSide={{
           totalCount: meta.totalCount,

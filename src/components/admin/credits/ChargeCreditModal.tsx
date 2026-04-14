@@ -17,7 +17,7 @@ interface ChargeCreditModalProps {
 }
 
 const chargeCreditSchema = z.object({
-  workplaceId: z.string().min(1, "사업장을 선택하세요"),
+  workplaceId: z.string().min(1, "고객사를 선택하세요"),
   amount: z.number().min(1, "1 크레딧 이상 입력하세요"),
 });
 
@@ -43,7 +43,7 @@ export default function ChargeCreditModal({
   const onSubmit = async (data: ChargeCreditFormData) => {
     const workplace = workplaces.find((w) => w.id === data.workplaceId);
     if (!workplace) {
-      toast.error("사업장 정보를 찾을 수 없습니다.");
+      toast.error("고객사 정보를 찾을 수 없습니다.");
       return;
     }
 
@@ -79,7 +79,7 @@ export default function ChargeCreditModal({
       submitDisabled={!isValid}
     >
       <div className="space-y-4">
-        {/* 사업장 선택 */}
+        {/* 고객사 선택 */}
         <Controller
           name="workplaceId"
           control={control}
