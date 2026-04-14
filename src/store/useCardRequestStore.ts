@@ -19,8 +19,7 @@ interface CardRequestStore {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 
-  // Supabase 동기화
-  getCardRequests: (workplaceId: string, params: PagedRequest) => Promise<void>;
+  getCardRequests: (params: PagedRequest) => Promise<void>;
 }
 
 export const useCardRequestStore = create<CardRequestStore>()(
@@ -59,11 +58,10 @@ export const useCardRequestStore = create<CardRequestStore>()(
 
       setError: (error) => set({ error }),
 
-      // Supabase에서 데이터 가져오기
-      getCardRequests: async (workplaceId, params) => {
+      getCardRequests: async (params) => {
         set({ isLoading: true, error: null });
         try {
-          const result = await fetchCardRequests(workplaceId, params);
+          const result = await fetchCardRequests(params);
           if (result.error || !result.data) {
             set({
               error: "카드 요청 목록을 불러오는데 실패했습니다.",

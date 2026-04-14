@@ -57,6 +57,133 @@ src/
 - 아이콘: lucide-react
 - 토스트: sonner
 
+## 목록 API 구현 패턴 (서버사이드 페이지네이션)
+
+백엔드 API 교체 후 모든 목록 화면은 아래 패턴을 따른다. 슈퍼관리자 고객사 목록(`/admin/clients`)이 기준 구현체.
+
+### 백엔드 응답 구조
+
+```
+// 공통 응답 envelope (ApiResponse<T> — src/types/response.ts)
+{ message: string, data: T, code: number }
+
+// 목록 응답 (ApiListResponse<T> = ApiResponse<PagedData<T>>)
+{
+  message: "요청이 정상 처리되었습니다.",
+  data: {
+    meta: { pageNumber, pageSize, totalCount, totalPages },  // PaginationMeta
+    data: [...]                                              // T[]
+  },
+  code: 200
+}
+```
+
+### 타입 파일
+
+| 파일 | 내용 |
+|------|------|
+| `src/types/response.ts` | `ApiResponse<T>`, `PaginationMeta`, `PagedData<T>`, `ApiListResponse<T>`, `ApiDetailResponse<T>` |
+| `src/types/pagination.ts` | `PagedRequest` (pageNumber, pageSize, search?, sortBy?, sortOrder?) |
+
+### API 함수 패턴 (`src/lib/api/xxx.ts`)
+
+```typescript
+// 백엔드 응답 필드용 로컬 인터페이스
+interface BackendItem { fieldA: string; fieldB: number; ... }
+
+export async function fetchXxxList(params: PagedRequest) {
+  const query = new URLSearchParams({
+    pageNumber: String(params.pageNumber),
+    pageSize: String(params.pageSize),
+  });
+  if (params.search) query.set("searchKey", params.search);
+
+  const { data, error } = await apiClient.get<PagedData<BackendItem>>(
+    `/manager-api/v1/.../GetXxxList?${query.toString()}`,
+  );
+  if (error || !data) return { data: null, error };
+
+  const items: FrontendType[] = data.data.map((item) => ({
+    id: item.xxxSeq,        // 백엔드 식별자 → id로 매핑
+    name: item.xxxName,
+    // ...camelCase 변환
+  }));
+
+  return { data: { meta: data.meta, data: items }, error: null };
+}
+```
+
+> `apiClient`는 응답 envelope(`{ message, data, code }`)을 자동 unwrap하여 `data` 필드만 반환.  
+> 따라서 `apiClient.get<PagedData<T>>`로 제네릭을 지정하면 바로 `{ meta, data }` 구조로 접근 가능.
+
+### Zustand Store 패턴 (`src/store/useXxxStore.ts`)
+
+```typescript
+interface XxxStore {
+  items: FrontendType[];
+  meta: PaginationMeta;
+  isLoading: boolean;
+  error: string | null;
+  // Actions: setItems, addItem, updateItem, deleteItem, setLoading, setError
+  fetchItems: (params: PagedRequest) => Promise<void>;  // workplaceId 불필요 (토큰 기반)
+}
+
+// fetchItems 구현
+fetchItems: async (params) => {
+  set({ isLoading: true, error: null });
+  try {
+    const result = await fetchXxxList(params);
+    if (result.error || !result.data) {
+      set({ error: "로딩 실패", isLoading: false });
+    } else {
+      set({ items: result.data.data, meta: result.data.meta, isLoading: false });
+    }
+  } catch {
+    set({ error: "데이터 동기화 실패", isLoading: false });
+  }
+},
+```
+
+### 페이지 컴포넌트 패턴 (`src/app/.../page.tsx`)
+
+```typescript
+"use client";
+
+export default function XxxPage() {
+  const { items, meta, fetchItems } = useXxxStore();
+  const { page, search, params, setPage, setSearch } = useQueryParams();
+
+  useEffect(() => {
+    fetchItems(params);          // workplaceId 인수 없음 (토큰 기반)
+  }, [page, search]);
+
+  return (
+    <>
+      <BaseTable
+        data={items}
+        columns={columns}
+        serverSide={{
+          totalCount: meta.totalCount,
+          totalPages: meta.totalPages,
+          currentPage: meta.pageNumber,
+          pageSize: meta.pageSize,
+          currentSearch: search,
+          onPageChange: setPage,
+          onSearch: setSearch,
+        }}
+      />
+    </>
+  );
+}
+```
+
+### 핵심 규칙 요약
+- 백엔드 API는 토큰 기반이므로 `workplaceId`를 별도 인수로 전달하지 않음
+- 백엔드 필드명(camelCase/PascalCase 혼재)은 API 함수 내에서 프론트엔드 camelCase로 변환
+- 백엔드 식별자(`userSeq`, `adminSeq` 등)는 프론트엔드 `id` 필드로 통일 매핑
+
+---
+
 ## 작업 진행 규칙
 
 - **Phase 단위 세션 분리**: 구현은 Phase 별로 세션을 나눠서 진행

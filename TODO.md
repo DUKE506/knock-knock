@@ -183,15 +183,15 @@
 
 ### Task 5-B: 카드 발급 관리 API 교체 (`/manager/card-requests`)
 
-- [ ] `src/lib/api/cardRequest.ts` — `fetchCardRequests()` → `GET /api/v1/MasterSite/W/sign/GetMobileUserList` 교체 + 응답 매핑
-  - [ ] `status` 매핑: IssueStatus 0→"pending", 1/2→"approved"
-  - [ ] `isActivated` 매핑: IssueStatus == 2
-  - [ ] `id` → `userSeq` (백엔드 식별자) 매핑
-- [ ] `src/lib/api/cardRequest.ts` — `approveCardRequest()` → `POST /api/v1/MasterSite/W/sign/ApproveOrRejectUser` (isApprove: true) 교체
-  - [ ] `createCard()`, `sendCardActivationEmail()` 호출 제거 (백엔드가 처리)
-- [ ] `src/lib/api/cardRequest.ts` — `rejectCardRequest()` → `POST /api/v1/MasterSite/W/sign/ApproveOrRejectUser` (isApprove: false) 교체
-- [ ] `src/types/manager/card/cardRequest.ts` — `id` 필드를 `userSeq` 기반으로 수정
-- [ ] `src/lib/api/card.ts` — `createCard()` 의존성 제거 확인 (cardRequest에서만 호출됨)
+- [△] `src/lib/api/cardRequest.ts` — `fetchCardRequests()` → `GET /manager-api/v1/MasterSite/W/sign/GetMobileUserList` 교체 + 응답 매핑
+  - [△] `status` 매핑: IssueStatus 0→"pending", 1/2→"approved"
+  - [△] `isActivated` 매핑: IssueStatus == 2
+  - [△] `id` → `userSeq` (백엔드 식별자) 매핑
+- [△] `src/lib/api/cardRequest.ts` — `approveCardRequest()` → `POST /manager-api/v1/MasterSite/W/sign/ApproveOrRejectUser` (isApprove: true) 교체
+  - [△] `createCard()`, `sendCardActivationEmail()` 호출 제거 (백엔드가 처리)
+- [△] `src/lib/api/cardRequest.ts` — `rejectCardRequest()` → `POST /manager-api/v1/MasterSite/W/sign/ApproveOrRejectUser` (isApprove: false) 교체
+- [△] `src/types/manager/card/cardRequest.ts` — `id` 필드를 `userSeq` 기반으로 수정
+- [△] `src/lib/api/card.ts` — `createCard()` 의존성 제거 확인 (cardRequest에서만 호출됨)
 
 ### Task 5-C: 관리자 관리 API 교체 (`/manager/users`)
 

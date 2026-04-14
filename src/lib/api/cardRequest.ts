@@ -1,8 +1,8 @@
 import { supabase } from "../supabase";
+import { apiClient } from "@/lib/apiClient";
 import { CardRequest } from "@/types/manager/card/cardRequest";
 import { PagedRequest } from "@/types/pagination";
-import { createCard } from "./card";
-import { sendCardActivationEmail } from "./mail";
+import { PagedData } from "@/types/response";
 
 // ============================================
 // 카드 요청 관련 API
@@ -51,157 +51,101 @@ export async function createCardRequest(data: {
   return { cardRequest, error: null };
 }
 
+interface MobileUserItem {
+  userSeq: string;
+  deviceId?: string;
+  name: string;
+  dept?: string;
+  job?: string;
+  email: string;
+  company?: string;
+  sabun?: string;
+  phoneNumber: string;
+  cardStartDt?: string;
+  cardEndDt?: string;
+  createDt: string;
+  issueStatus?: number; // 0=승인대기, 1=활성화대기, 2=활성화
+  issueStatusName: string;
+}
+
 /**
- * 카드 요청 목록 조회 (workplace 기준, 서버사이드 페이지네이션)
+ * 카드 요청 목록 조회 (서버사이드 페이지네이션)
  */
-export async function fetchCardRequests(
-  workplaceId: string,
-  params: PagedRequest,
-) {
-  const from = (params.pageNumber - 1) * params.pageSize;
-  const to = from + params.pageSize - 1;
+export async function fetchCardRequests(params: PagedRequest) {
+  const query = new URLSearchParams({
+    pageNumber: String(params.pageNumber),
+    pageSize: String(params.pageSize),
+  });
+  if (params.search) query.set("searchKey", params.search);
 
-  let query = supabase
-    .from("card_requests")
-    .select("*, cards(is_activated)", { count: "exact" })
-    .eq("workplace_id", workplaceId)
-    .order("requested_at", { ascending: false });
+  const { data, error } = await apiClient.get<PagedData<MobileUserItem>>(
+    `/manager-api/v1/MasterSite/W/sign/GetMobileUserList?${query.toString()}`,
+  );
 
-  if (params.search) {
-    query = query.or(
-      `user_name.like.%${params.search}%,user_email.like.%${params.search}%,user_phone.like.%${params.search}%`,
-    );
-  }
-
-  query = query.range(from, to);
-
-  const { data, error, count } = await query;
-
-  if (error) {
+  if (error || !data) {
     console.error("카드 요청 목록 조회 실패:", error);
     return { data: null, error };
   }
 
-  // Supabase 형식 → 프론트엔드 형식 변환
-  const cardRequests: CardRequest[] = (data ?? []).map((row) => ({
-    id: row.id,
-    userName: row.user_name,
-    userEmail: row.user_email,
-    userPhone: row.user_phone,
-    requestedAt: new Date(row.requested_at)
-      .toLocaleString("ko-KR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })
-      .replace(/\. /g, ".")
-      .replace(/\.$/, ""),
-    status: row.status as "pending" | "approved",
-    reviewedAt: row.reviewed_at
-      ? new Date(row.reviewed_at).toLocaleString("ko-KR")
-      : undefined,
-    reviewedBy: row.reviewed_by,
-    isActivated:
-      Array.isArray(row.cards) && row.cards.length > 0
-        ? (row.cards[0].is_activated as boolean)
-        : undefined,
-  }));
+  const cardRequests: CardRequest[] = data.data.map((item) => {
+    const issueStatus = item.issueStatus ?? -1;
+    const status = issueStatus === 0 ? "pending" : "approved";
+    const isActivated = issueStatus === 2;
 
-  return {
-    data: {
-      data: cardRequests,
-      meta: {
-        pageNumber: params.pageNumber,
-        pageSize: params.pageSize,
-        totalCount: count || 0,
-        totalPages: Math.ceil((count || 0) / params.pageSize),
-      },
-    },
-    error: null,
-  };
-}
-
-/**
- * 카드 요청 승인
- */
-export async function approveCardRequest(id: string, reviewedBy: string) {
-  // 1. 카드 요청 정보 조회
-  const { data: cardRequest, error: fetchError } = await supabase
-    .from("card_requests")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (fetchError || !cardRequest) {
-    console.error("카드 요청 조회 실패:", fetchError);
-    return { cardRequest: null, error: fetchError };
-  }
-
-  // 2. 카드 요청 상태 업데이트 (approved)
-  const { data: updatedRequest, error: updateError } = await supabase
-    .from("card_requests")
-    .update({
-      status: "approved",
-      reviewed_at: new Date().toISOString(),
-      reviewed_by: reviewedBy,
-    })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (updateError) {
-    console.error("카드 요청 승인 실패:", updateError);
-    return { cardRequest: null, error: updateError };
-  }
-
-  // 3. 카드 자동 생성
-  const { card, error: cardError } = await createCard({
-    cardRequestId: id,
-    userName: cardRequest.user_name,
-    userEmail: cardRequest.user_email,
-    userPhone: cardRequest.user_phone,
-    workplaceId: cardRequest.workplace_id,
-    createdBy: reviewedBy,
+    return {
+      id: item.userSeq,
+      userName: item.name,
+      userEmail: item.email,
+      userPhone: item.phoneNumber,
+      requestedAt: item.createDt
+        ? new Date(item.createDt)
+            .toLocaleString("ko-KR", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            })
+            .replace(/\. /g, ".")
+            .replace(/\.$/, "")
+        : "",
+      status,
+      isActivated,
+    };
   });
 
-  if (cardError || !card) {
-    console.error("카드 생성 실패:", cardError);
-    // 카드 생성 실패 시 요청 상태 롤백
-    await supabase
-      .from("card_requests")
-      .update({ status: "pending" })
-      .eq("id", id);
-    return { cardRequest: null, error: "카드 생성에 실패했습니다." };
-  }
-
-  // 4. 활성화번호 이메일 발송
-  try {
-    await sendCardActivationEmail({
-      to: cardRequest.user_email,
-      userName: cardRequest.user_name,
-      cardNumber: card.card_number,
-      activationCode: card.activation_code,
-    });
-    console.log("활성화번호 이메일 발송 완료:", cardRequest.user_email);
-  } catch (emailError) {
-    console.error("이메일 발송 실패:", emailError);
-    // 이메일 실패는 치명적이지 않으므로 계속 진행
-  }
-
-  return { cardRequest: updatedRequest, error: null };
+  return { data: { meta: data.meta, data: cardRequests }, error: null };
 }
 
 /**
- * 카드 요청 거부 (DB에서 삭제)
+ * 카드 요청 승인 (백엔드가 카드 생성 및 이메일 발송 처리)
  */
-export async function rejectCardRequest(id: string) {
-  const { error } = await supabase.from("card_requests").delete().eq("id", id);
+export async function approveCardRequest(id: string) {
+  const { error } = await apiClient.post(
+    "/manager-api/v1/MasterSite/W/sign/ApproveOrRejectUser",
+    { userSeq: id, isApprove: true },
+  );
 
   if (error) {
-    console.error("카드 요청 거부(삭제) 실패:", error);
+    console.error("카드 요청 승인 실패:", error);
+    return { error };
+  }
+
+  return { error: null };
+}
+
+/**
+ * 카드 요청 거부 (백엔드에서 row 삭제 처리)
+ */
+export async function rejectCardRequest(id: string) {
+  const { error } = await apiClient.post(
+    "/manager-api/v1/MasterSite/W/sign/ApproveOrRejectUser",
+    { userSeq: id, isApprove: false },
+  );
+
+  if (error) {
+    console.error("카드 요청 거부 실패:", error);
     return { error };
   }
 

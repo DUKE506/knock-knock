@@ -10,7 +10,6 @@ import {
 } from "@/types/manager/card/cardRequest";
 import { approveCardRequest, rejectCardRequest } from "@/lib/api/cardRequest";
 import { useCardRequestStore } from "@/store/useCardRequestStore";
-import { useAuthStore } from "@/store/useAuthStore";
 import { useQueryParams } from "@/hooks/useQueryParams";
 import { createCardRequestColumns } from "./columns";
 
@@ -18,9 +17,6 @@ export default function CardRequestsPage() {
   const [selectedStatus, setSelectedStatus] = useState<
     CardRequestStatus | "all"
   >("all");
-  const { user } = useAuthStore();
-  const userName = user?.name || user?.email || "";
-  const workplaceId = user?.workplaceId || "";
   const [selectedRequest, setSelectedRequest] = useState<CardRequest | null>(
     null,
   );
@@ -37,9 +33,8 @@ export default function CardRequestsPage() {
 
   // 카드 요청 목록 불러오기
   useEffect(() => {
-    if (!workplaceId) return;
-    getCardRequests(workplaceId, params);
-  }, [workplaceId, page, search]);
+    getCardRequests(params);
+  }, [page, search]);
 
   // 상세 모달 열기
   const openDetailModal = (cardRequest: CardRequest) => {
@@ -49,29 +44,17 @@ export default function CardRequestsPage() {
 
   // 승인 처리
   const handleApprove = async (id: string) => {
-    if (!userName) {
-      toast.error("사용자 정보를 찾을 수 없습니다.");
-      return;
-    }
-    const { error } = await approveCardRequest(id, userName);
+    const { error } = await approveCardRequest(id);
     if (error) {
       toast.error("승인 처리에 실패했습니다.");
     } else {
       toast.success("카드 발급이 승인되었습니다.");
-      updateCardRequest(id, {
-        status: "approved",
-        reviewedBy: userName,
-        reviewedAt: new Date().toLocaleString("ko-KR"),
-      });
+      updateCardRequest(id, { status: "approved" });
     }
   };
 
-  // 거부 처리 (DB 삭제)
+  // 거부 처리
   const handleReject = async (id: string) => {
-    if (!userName) {
-      toast.error("사용자 정보를 찾을 수 없습니다.");
-      return;
-    }
     const { error } = await rejectCardRequest(id);
     if (error) {
       toast.error("거부 처리에 실패했습니다.");
