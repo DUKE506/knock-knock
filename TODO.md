@@ -230,9 +230,28 @@
 - [x] `src/app/manager/credits/page.tsx` — `fetchCreditHistory()` → `fetchManagerCreditHistory()` 교체, `workplaceId` 의존성 제거
 - [x] `src/app/manager/credits/columns.tsx` — `ManagerCreditHistoryItem` 타입 교체, "사용" 뱃지(`bg-red-dim`) 추가
 
-### Task 5-E: 설정 API 교체 (`/manager/settings`)
+### Task 5-E: 설정 API 교체 + UI 개편 (`/manager/settings`)
 
-- [ ] `src/app/manager/settings/page.tsx` — 더미 데이터 → `fetchSiteDetail()` 실제 API 연동
+**API 함수 (`src/lib/api/manager/site.ts`)**
+- [x] `SiteDetailResponse` / `SiteDetail` 인터페이스에 `autoIssue: boolean`, `qrTimeout: number` 필드 추가 (백엔드 응답 기준)
+- [x] `updateAutoIssue(siteKey, autoIssue)` 신규 → `PUT /manager-api/v1/MasterSite/W/sign/UpdateAutoIssue` (`{ siteKey, autoIssue }`)
+- [x] `updateQrTimeout(siteKey, qrTimeout)` 신규 → `PUT /manager-api/v1/MasterSite/W/sign/UpdateQrTimeout` (`{ siteKey, qrTimeout }`)
+
+**모달 컴포넌트**
+- [x] `src/components/manager/settings/EditSiteNameModal.tsx` (신규) — 사업장 이름 수정 모달 (BaseModal + Input + react-hook-form, UpdateSiteName API 추후 연동)
+- [x] `src/components/manager/settings/EditQrTimeoutModal.tsx` (신규) — QR 유효시간 수정 모달 (BaseModal + Input[number] + react-hook-form, `updateQrTimeout()` 호출)
+
+**공통 컴포넌트**
+- [x] `src/components/common/Switch.tsx` (신규) — Tailwind 토글 스위치 (checked, onChange, disabled)
+
+**페이지 (`src/app/manager/settings/page.tsx`)**
+- [x] 더미 데이터 → `fetchSiteDetail()` 실제 API 연동 (`autoIssue`, `qrTimeout` 포함)
+- [x] UI 개편: 인라인 편집 폼/저장 버튼 제거 → `SettingRow` 컴포넌트 기반 "라벨 + 값 + 수정버튼" row 구조
+- [x] 사업장 정보 카드: 사업장 이름(수정 가능) / 주관리자 / 생성일 3개 row로 구성 (라이센스 코드 제거)
+- [x] 사업장 이름 row — 수정 버튼 → `EditSiteNameModal` 연결
+- [x] 자동승인 row — `Switch` 컴포넌트, 토글 시 즉시 `updateAutoIssue()` 호출 (optimistic update + rollback)
+- [x] QR 유효시간 row — 현재값(초) 표시 + 수정 버튼 → `EditQrTimeoutModal` 연결, `?? 30` 폴백 처리
+- [x] 카드 헤더 아이콘 `w-10 h-10` / row 아이콘 `w-4 h-4` 로 사이즈 통일
 
 ---
 

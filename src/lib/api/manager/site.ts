@@ -6,6 +6,8 @@ interface SiteDetailResponse {
   creditCount: number;
   creditUsed: number;
   licenseKey: string;
+  autoIssue: boolean;
+  qrTimeout: number;
 }
 
 export interface SiteDetail {
@@ -14,6 +16,8 @@ export interface SiteDetail {
   creditCount: number;
   creditUsed: number;
   licenseKey: string;
+  autoIssue: boolean;
+  qrTimeout: number;
 }
 
 export async function fetchSiteDetail(): Promise<{
@@ -35,7 +39,31 @@ export async function fetchSiteDetail(): Promise<{
       creditCount: data.creditCount,
       creditUsed: data.creditUsed,
       licenseKey: data.licenseKey,
+      autoIssue: data.autoIssue,
+      qrTimeout: data.qrTimeout,
     },
     error: null,
   };
+}
+
+export async function updateAutoIssue(
+  siteKey: string,
+  autoIssue: boolean,
+): Promise<{ error: unknown }> {
+  const { error } = await apiClient.put(
+    "/manager-api/v1/MasterSite/W/sign/UpdateAutoIssue",
+    { siteKey, autoIssue },
+  );
+  return { error };
+}
+
+export async function updateQrTimeout(
+  siteKey: string,
+  qrTimeout: number,
+): Promise<{ error: unknown }> {
+  const { error } = await apiClient.put(
+    "/manager-api/v1/MasterSite/W/sign/UpdateQrTimeout",
+    { siteKey, qrTimeout },
+  );
+  return { error };
 }
