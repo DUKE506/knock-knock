@@ -220,14 +220,18 @@
   - [x] `addSubMaster()` 호출 (role: 1 고정, licenseKey: 토큰에서 추출)
 - [x] `src/app/auth/client/invite/page.tsx` — 레거시 Supabase 초대 페이지 삭제
 
-### Task 5-D: 크레딧/설정 API 교체 (`/manager/credits`, `/manager/settings`)
+### Task 5-D: 크레딧 API 교체 (`/manager/credits`)
 
-- [ ] `src/lib/api/manager/site.ts` (신규) — `fetchSiteDetail()` → `GET /api/v1/MasterSite/W/sign/GetSiteDetail`
-  - [ ] 응답 매핑: `siteName`, `licenseKey`, `creditCount`, `creditUsed`, `createDt`
-- [ ] `src/lib/api/credit.ts` — `fetchManagerCreditHistory()` 신규 → `GET /api/v1/MasterSite/W/sign/GetCreditHistory` + 응답 매핑
-  - [ ] `gubun` 필터: 1=충전, 2=사용 (기존 `fetchCreditHistory` Supabase용은 유지)
-- [ ] `src/app/manager/credits/page.tsx` — `fetchWorkplaceById()` → `fetchSiteDetail()` 교체 (크레딧 현황 카드)
-- [ ] `src/app/manager/credits/page.tsx` — `fetchCreditHistory()` → `fetchManagerCreditHistory()` 교체
+- [x] `src/lib/api/manager/site.ts` (신규) — `fetchSiteDetail()` → `GET /manager-api/v1/MasterSite/W/sign/GetSiteDetail`
+  - [x] 응답 매핑: `siteKey`, `siteName`, `creditCount`, `creditUsed`, `licenseKey`
+- [x] `src/lib/api/credit.ts` — `fetchManagerCreditHistory()` 신규 → `GET /manager-api/v1/MasterSite/W/sign/GetCreditHistory` + 응답 매핑
+  - [x] `gubun` 문자열 그대로 사용 ("충전"/"사용"), `consumer` 필드 추가 (기존 `fetchCreditHistory` Supabase용은 유지)
+- [x] `src/app/manager/credits/page.tsx` — `fetchWorkplaceById()` → `fetchSiteDetail()` 교체 (크레딧 현황 카드)
+- [x] `src/app/manager/credits/page.tsx` — `fetchCreditHistory()` → `fetchManagerCreditHistory()` 교체, `workplaceId` 의존성 제거
+- [x] `src/app/manager/credits/columns.tsx` — `ManagerCreditHistoryItem` 타입 교체, "사용" 뱃지(`bg-red-dim`) 추가
+
+### Task 5-E: 설정 API 교체 (`/manager/settings`)
+
 - [ ] `src/app/manager/settings/page.tsx` — 더미 데이터 → `fetchSiteDetail()` 실제 API 연동
 
 ---

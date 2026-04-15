@@ -1,48 +1,57 @@
-import { CreditHistory } from "@/lib/api/credit";
+import { ManagerCreditHistoryItem } from "@/lib/api/credit";
 import { ColumnDef } from "@tanstack/react-table";
-import { Zap } from "lucide-react";
+import { Zap, Minus } from "lucide-react";
 
-export const creditHistoryColumns: ColumnDef<CreditHistory>[] = [
+export const creditHistoryColumns: ColumnDef<ManagerCreditHistoryItem>[] = [
   {
-    accessorKey: "type",
+    accessorKey: "gubun",
     header: "구분",
     cell: ({ row }) => {
-      const type = row.original.type;
-      const config: Record<string, { label: string; color: string }> = {
-        charged: { label: "충전", color: "bg-green-dim text-green" },
-      };
-      const c = config[type] ?? config.charged;
+      const gubun = row.original.gubun;
+      const isCharge = gubun === "충전";
       return (
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${c.color}`}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${
+            isCharge ? "bg-green-dim text-green" : "bg-red-dim text-red"
+          }`}
         >
-          <Zap className="w-3.5 h-3.5" />
-          {c.label}
+          {isCharge ? (
+            <Zap className="w-3.5 h-3.5" />
+          ) : (
+            <Minus className="w-3.5 h-3.5" />
+          )}
+          {gubun}
         </span>
       );
     },
   },
   {
-    accessorKey: "amount",
+    accessorKey: "creditCount",
     header: "수량",
-    cell: ({ row }) => (
-      <div className="text-sm text-text font-mono">
-        +{row.original.amount.toLocaleString()}
-      </div>
-    ),
+    cell: ({ row }) => {
+      const isCharge = row.original.gubun === "충전";
+      return (
+        <div className={`text-sm font-mono ${isCharge ? "text-green" : "text-red"}`}>
+          {isCharge ? "+" : "-"}
+          {row.original.creditCount.toLocaleString()}
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "createdBy",
+    accessorKey: "producer",
     header: "처리자",
-    cell: ({ row }) => (
-      <div className="text-sm text-text-2">{row.original.createdBy || "-"}</div>
-    ),
+    cell: ({ row }) => {
+      const { gubun, producer, consumer } = row.original;
+      const actor = gubun === "충전" ? producer : (consumer ?? producer);
+      return <div className="text-sm text-text-2">{actor || "-"}</div>;
+    },
   },
   {
-    accessorKey: "createdAt",
+    accessorKey: "createDt",
     header: "일시",
     cell: ({ row }) => (
-      <div className="text-sm text-text-3 font-mono">{row.original.createdAt}</div>
+      <div className="text-sm text-text-3 font-mono">{row.original.createDt}</div>
     ),
   },
 ];

@@ -2,24 +2,20 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Coins } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
-import { fetchWorkplaceById } from "@/lib/api/workplace";
-import { fetchCreditHistory, CreditHistory } from "@/lib/api/credit";
+import { fetchSiteDetail } from "@/lib/api/manager/site";
+import { fetchManagerCreditHistory, ManagerCreditHistoryItem } from "@/lib/api/credit";
 import { useQueryParams } from "@/hooks/useQueryParams";
 import BaseTable from "@/components/common/table/BaseTable";
 import { creditHistoryColumns } from "./columns";
 
 export default function CreditsPage() {
-  const user = useAuthStore((s) => s.user);
-  const workplaceId = user?.workplaceId ?? "";
-
   // 크레딧 현황
-  const [creditRemaining, setCreditRemaining] = useState<number | null>(null);
-  const [creditTotal, setCreditTotal] = useState<number | null>(null);
+  const [creditCount, setCreditCount] = useState<number | null>(null);
+  const [creditUsed, setCreditUsed] = useState<number | null>(null);
   const [creditLoading, setCreditLoading] = useState(true);
 
   // 이력 테이블
-  const [history, setHistory] = useState<CreditHistory[]>([]);
+  const [history, setHistory] = useState<ManagerCreditHistoryItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -28,37 +24,35 @@ export default function CreditsPage() {
 
   // 크레딧 현황 로드
   useEffect(() => {
-    if (!workplaceId) return;
     setCreditLoading(true);
-    fetchWorkplaceById(workplaceId).then(({ workplace }) => {
-      if (workplace) {
-        setCreditRemaining(workplace.creditRemaining);
-        setCreditTotal(workplace.creditTotal);
+    fetchSiteDetail().then(({ data }) => {
+      if (data) {
+        setCreditCount(data.creditCount);
+        setCreditUsed(data.creditUsed);
       }
       setCreditLoading(false);
     });
-  }, [workplaceId]);
+  }, []);
 
   // 이력 로드
   const loadHistory = useCallback(async () => {
-    if (!workplaceId) return;
     setHistoryLoading(true);
-    const { data, error } = await fetchCreditHistory(params, { workplaceId });
+    const { data, error } = await fetchManagerCreditHistory(params);
     if (!error && data) {
       setHistory(data.data);
       setTotalCount(data.meta.totalCount);
       setTotalPages(data.meta.totalPages);
     }
     setHistoryLoading(false);
-  }, [workplaceId, params]);
+  }, [params]);
 
   useEffect(() => {
     loadHistory();
   }, [loadHistory]);
 
-  const creditRemaining_ = creditRemaining ?? 0;
-  const creditTotal_ = creditTotal ?? 0;
-  const remainingPercentage = creditTotal_ > 0 ? (creditRemaining_ / creditTotal_) * 100 : 0;
+  const creditRemaining = (creditCount ?? 0) - (creditUsed ?? 0);
+  const creditTotal = creditCount ?? 0;
+  const remainingPercentage = creditTotal > 0 ? (creditRemaining / creditTotal) * 100 : 0;
   const usedPercentage = 100 - remainingPercentage;
 
   return (
@@ -71,7 +65,7 @@ export default function CreditsPage() {
 
       <div className="space-y-6">
         {/* 크레딧 현황 카드 */}
-        <div className="bg-gradient-to-br from-accent to-[#059669] rounded-lg p-6 text-white">
+        <div className="bg-linear-to-br from-accent to-[#059669] rounded-lg p-6 text-white">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
@@ -83,7 +77,7 @@ export default function CreditsPage() {
                   <p className="text-3xl font-bold opacity-60">-</p>
                 ) : (
                   <p className="text-3xl font-bold">
-                    {(creditRemaining ?? 0).toLocaleString()}
+                    {creditRemaining.toLocaleString()}
                   </p>
                 )}
               </div>
@@ -94,7 +88,7 @@ export default function CreditsPage() {
                 <p className="text-xl font-semibold opacity-60">-</p>
               ) : (
                 <p className="text-xl font-semibold">
-                  {(creditTotal ?? 0).toLocaleString()}
+                  {creditTotal.toLocaleString()}
                 </p>
               )}
             </div>

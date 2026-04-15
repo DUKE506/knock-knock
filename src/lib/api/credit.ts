@@ -295,6 +295,64 @@ export async function redeemCreditCode(code: string, workplaceId: string) {
   return { success: true, amount: creditHistory.amount, error: null };
 }
 
+// ============================================
+// 고객사 크레딧 이력 (백엔드 API)
+// ============================================
+
+export interface ManagerCreditHistoryItem {
+  id: string;
+  gubun: string; // "충전" | "사용"
+  creditCount: number;
+  producer: string;
+  consumer: string | null;
+  createDt: string;
+}
+
+interface BackendManagerCreditItem {
+  creditSeq: string;
+  creditCount: number;
+  gubun: string;
+  producer: string;
+  consumer: string | null;
+  createDt: string;
+}
+
+/**
+ * 고객사 크레딧 이력 조회 (백엔드 API, 토큰 기반)
+ */
+export async function fetchManagerCreditHistory(params: PagedRequest) {
+  const query = new URLSearchParams({
+    pageNumber: String(params.pageNumber),
+    pageSize: String(params.pageSize),
+  });
+  if (params.search) query.set("searchKey", params.search);
+
+  const { data, error } = await apiClient.get<PagedData<BackendManagerCreditItem>>(
+    `/manager-api/v1/MasterSite/W/sign/GetCreditHistory?${query.toString()}`,
+  );
+
+  if (error || !data) {
+    return { data: null, error };
+  }
+
+  const items: ManagerCreditHistoryItem[] = data.data.map((item) => ({
+    id: item.creditSeq,
+    gubun: item.gubun,
+    creditCount: item.creditCount,
+    producer: item.producer,
+    consumer: item.consumer,
+    createDt: new Date(item.createDt).toLocaleString("ko-KR"),
+  }));
+
+  return {
+    data: {
+      meta: data.meta,
+      data: items,
+    },
+    error: null,
+  };
+}
+
 interface ChargeHistoryItem {
   creditSeq: string;
   siteKey: string;
