@@ -201,9 +201,18 @@
   - [x] 로컬 JWT 생성 로직 제거, `{ siteKey, receiver }` 전송
   - [x] `siteKey`는 `useAuthStore().user.workplaceId`에서 가져오기
 - [x] `src/lib/api/user.ts` — `addSubMaster()` 신규 → `POST /manager-api/v1/SubRegister/W/AddSubMaster`
+- [x] `src/lib/api/user.ts` — `delegatePrimaryRole()` 신규 → `PUT /manager-api/v1/MasterSite/W/sign/ChangeMainMaster`
+- [x] `src/lib/apiClient.ts` — `put()` 메서드 추가
+- [x] `src/components/common/modal/ConfirmModal.tsx` (신규) — 공통 확인 모달 (`variant`, `icon`, `description`, `isLoading` 지원)
+- [x] `src/types/modal.ts` + `src/components/common/modal/BaseModal.tsx` — `submitVariant` prop 추가
 - [x] `src/components/manager/users/InviteUserModal.tsx` — `localStorage` → `useAuthStore` 교체, 새 초대 API 연결
 - [x] `src/app/manager/users/columns.tsx` — `User` 타입 교체 (`loginId`, `deptName`, `job`, `role` 기반)
 - [x] `src/app/manager/users/columns.tsx` — `role` 뱃지 컬럼 추가 (주관리자/부관리자)
+- [x] `src/app/manager/users/columns.tsx` — 주관리자 전용 3-dot 액션 메뉴 추가 (Portal 렌더링으로 overflow 클리핑 해결, `ArrowRightLeft` 아이콘)
+- [x] `src/app/manager/users/page.tsx` — 초대 버튼 주관리자(`MainMaster`)만 노출
+- [x] `src/app/manager/users/page.tsx` — 위임 `ConfirmModal` 연결, 성공 시 `useAuthStore` role 즉시 업데이트
+- [x] `src/app/manager/card-requests/page.tsx` — 거부 `confirm()` → `ConfirmModal`(danger, XCircle) 교체
+- [x] `src/app/manager/card-requests/columns.tsx` — 거부 버튼 `confirm()` 제거
 - [x] `src/store/useClientStore.ts` — `User` 타입 및 `getUsers` 연결 수정
 - [x] `src/app/auth/sub-register/page.tsx` (신규) — 서브마스터 회원가입 페이지
   - [x] 초대 이메일 링크 토큰 검증 (`verifyInviteToken` 재사용)
@@ -223,16 +232,14 @@
 
 ---
 
-## Phase 6: 관리자 역할 위임 (보류)
+## Phase 6: 관리자 역할 위임 ✅ Task 5-C에서 선구현
 
 ### Task 6-A: 주관리자/부관리자 기능
 
-- [ ] `src/lib/api/user.ts` — `delegatePrimaryRole(currentId, targetId, workplaceId)` 함수 추가
-  - [ ] `PUT /api/v1/MasterSite/W/sign/ChangeMainMaster` 호출 (`{ adminSeq }`)
-- [ ] `src/app/manager/users/columns.tsx` — "위임" 버튼 추가 (주관리자만 노출)
-- [ ] `src/app/manager/users/page.tsx` — 위임 핸들러 추가
-- [ ] `src/app/manager/users/page.tsx` — 위임 확인 다이얼로그 추가
-- [ ] `src/store/useAuthStore.ts` — 위임 후 현재 사용자 `role` 즉시 업데이트
+- [x] `src/lib/api/user.ts` — `delegatePrimaryRole(adminSeq)` 함수 추가 → `PUT /manager-api/v1/MasterSite/W/sign/ChangeMainMaster`
+- [x] `src/app/manager/users/columns.tsx` — 3-dot 메뉴 "위임하기" 추가 (주관리자만 노출, 부관리자 row에만 표시)
+- [x] `src/app/manager/users/page.tsx` — 위임 핸들러 + ConfirmModal 연결
+- [x] `src/store/useAuthStore.ts` — 위임 후 현재 사용자 `role` 즉시 업데이트 (`setUser` 재호출)
 
 ---
 

@@ -10,4 +10,5 @@ export interface BaseModalProps {
   showFooter?: boolean; // Footer 표시 여부 (기본: true)
   isLoading?: boolean; // 로딩 상태
   submitDisabled?: boolean; // 제출 버튼 비활성화
+  submitVariant?: "primary" | "danger"; // 제출 버튼 variant (기본: "primary")
 }

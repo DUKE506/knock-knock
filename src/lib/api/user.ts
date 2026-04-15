@@ -69,6 +69,19 @@ export async function sendInviteClient(data: {
 }
 
 /**
+ * 주관리자 권한 위임 (위임받을 부관리자의 adminSeq 전달)
+ */
+export async function delegatePrimaryRole(adminSeq: string) {
+  const { error } = await apiClient.put(
+    "/manager-api/v1/MasterSite/W/sign/ChangeMainMaster",
+    { adminSeq },
+  );
+
+  if (error) return { success: false, error };
+  return { success: true, error: null };
+}
+
+/**
  * 부관리자 회원가입
  */
 export async function addSubMaster(data: {

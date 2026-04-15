@@ -11,6 +11,8 @@ import {
 import { approveCardRequest, rejectCardRequest } from "@/lib/api/cardRequest";
 import { useCardRequestStore } from "@/store/useCardRequestStore";
 import { useQueryParams } from "@/hooks/useQueryParams";
+import ConfirmModal from "@/components/common/modal/ConfirmModal";
+import { XCircle } from "lucide-react";
 import { createCardRequestColumns } from "./columns";
 
 export default function CardRequestsPage() {
@@ -21,6 +23,8 @@ export default function CardRequestsPage() {
     null,
   );
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   const {
     cardRequests,
@@ -54,13 +58,17 @@ export default function CardRequestsPage() {
   };
 
   // 거부 처리
-  const handleReject = async (id: string) => {
-    const { error } = await rejectCardRequest(id);
+  const handleReject = async () => {
+    if (!rejectTargetId) return;
+    setIsRejecting(true);
+    const { error } = await rejectCardRequest(rejectTargetId);
+    setIsRejecting(false);
     if (error) {
       toast.error("거부 처리에 실패했습니다.");
     } else {
       toast.success("카드 발급 요청이 거부되었습니다.");
-      deleteCardRequest(id);
+      deleteCardRequest(rejectTargetId);
+      setRejectTargetId(null);
     }
   };
 
@@ -78,7 +86,7 @@ export default function CardRequestsPage() {
 
   const columns = createCardRequestColumns({
     onApprove: handleApprove,
-    onReject: handleReject,
+    onReject: setRejectTargetId,
     onDetail: openDetailModal,
   });
 
@@ -144,6 +152,19 @@ export default function CardRequestsPage() {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         cardRequest={selectedRequest}
+      />
+
+      {/* 거부 확인 모달 */}
+      <ConfirmModal
+        isOpen={rejectTargetId !== null}
+        onClose={() => setRejectTargetId(null)}
+        onConfirm={handleReject}
+        title="발급 요청 거부"
+        description={"정말 거부하시겠습니까?\n거부 시 해당 요청은 삭제됩니다."}
+        confirmText="거부"
+        variant="danger"
+        icon={XCircle}
+        isLoading={isRejecting}
       />
     </>
   );

@@ -17,6 +17,7 @@ export default function BaseModal({
   showFooter = true,
   isLoading = false,
   submitDisabled = false,
+  submitVariant = "primary",
 }: BaseModalProps) {
   // ESC 키로 모달 닫기
   useEffect(() => {
@@ -103,7 +104,7 @@ export default function BaseModal({
               {onSubmit && (
                 <Button
                   type="submit"
-                  variant="primary"
+                  variant={submitVariant}
                   title={submitText}
                   isLoading={isLoading}
                   disabled={submitDisabled}

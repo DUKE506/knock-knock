@@ -109,11 +109,7 @@ export const createCardRequestColumns = (
                 variant="danger"
                 size="sm"
                 title="거부"
-                onClick={() => {
-                  if (confirm("정말 거부하시겠습니까?")) {
-                    handlers.onReject(row.original.id);
-                  }
-                }}
+                onClick={() => handlers.onReject(row.original.id)}
               />
             </>
           ) : isApproved ? (
